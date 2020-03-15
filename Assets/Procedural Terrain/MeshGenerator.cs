@@ -15,10 +15,7 @@ public class MeshGenerator : MonoBehaviour
 
     // Debuging 변수들
     [SerializeField]
-    private bool IsDebugging;
-    [SerializeField]
     private bool IsNoise;
-    private bool IsGenerating;
     private WaitForSeconds DebugTimer;
 
     // Mesh 객체
@@ -32,20 +29,12 @@ public class MeshGenerator : MonoBehaviour
         TerrainMesh = new Mesh();
         GetComponent<MeshFilter>().mesh = this.TerrainMesh;
 
-        if (IsDebugging)
-            DebugTimer = new WaitForSeconds(.1f);
-        else
-            DebugTimer = null;
-
-        StartCoroutine(CreateShape());
-        StartCoroutine(UpdateTerrainMesh());
+        CreateShape();
+        UpdateTerrainMesh();
     }
 
-    private IEnumerator CreateShape()
+    private void CreateShape()
     {
-        // TerrainMesh 생성 시작
-        IsGenerating = true;
-
         // 점 생성
         Mvertices = new Vector3[(Xsize + 1) * (Zsize + 1)];
 
@@ -80,42 +69,21 @@ public class MeshGenerator : MonoBehaviour
                 ++vert;
                 tris += 6;
 
-                yield return DebugTimer;
             }
             ++vert;
         }
-
-        // TerrainMesh 생성 종료
-        IsGenerating = false;
     }
 
-    private IEnumerator UpdateTerrainMesh()
+    private void UpdateTerrainMesh()
     {
         // TerrainMesh 생성되는 동안의 모습을 모여줌
-        while (IsGenerating)
-        {
-            TerrainMesh.Clear();
+        TerrainMesh.Clear();
 
-            TerrainMesh.vertices = this.Mvertices;
-            TerrainMesh.triangles = this.Mtriangles;
+        TerrainMesh.vertices = this.Mvertices;
+        TerrainMesh.triangles = this.Mtriangles;
 
-            TerrainMesh.RecalculateNormals();
-
-            yield return null;
-        }
+        TerrainMesh.RecalculateNormals();
 
         Debug.Log("Generating is Completed");
-    }
-
-    private void OnDrawGizmos()
-    {
-        // TerrainMesh 뼈대 표현
-        if (Mvertices == null)
-            return;
-
-        for(int c = 0; c < Mvertices.Length; c++)
-        {
-            Gizmos.DrawSphere(Mvertices[c], 0.1f);
-        }
     }
 }
