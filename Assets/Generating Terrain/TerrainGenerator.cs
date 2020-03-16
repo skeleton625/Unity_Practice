@@ -9,66 +9,69 @@ public class TerrainGenerator : MonoBehaviour
     [SerializeField]
     private float Scale;
     [SerializeField]
-    private Transform Sobject, Eobject;
+    private Transform[] Vertices;
     [SerializeField]
-    private int RF;
+    private float HeightForce;
 
-
-    private Vector3 Spoint, Epoint;
     private Terrain FieldTerrain;
     private float A, B;
 
     private void Start()
     {
-        Spoint = Sobject.position;
-        Epoint = Eobject.position;
         FieldTerrain = GetComponent<Terrain>();
-        FieldTerrain.terrainData = GenerateTerrain(FieldTerrain.terrainData, 0, 0, Width, Height);
+        FieldTerrain.terrainData = GenerateTerrain(FieldTerrain.terrainData);
     }
 
-    private void Update()
+    private TerrainData GenerateTerrain(TerrainData _data)
     {
-        if(Sobject.position != Spoint || Eobject.position != Epoint)
-        {
-            Spoint = Sobject.position;
-            Epoint = Eobject.position;
-            FieldTerrain.terrainData = GenerateTerrain(FieldTerrain.terrainData, 0, 0, Width, Height);
-        }
-    }
-
-    private TerrainData GenerateTerrain(TerrainData _data, int _sx, int _sz, int _ex, int _ez)
-    {
-        CalculateAandB();
         _data.heightmapResolution = Width + 1;
         _data.size = new Vector3(Width, Depth, Height);
-        _data.SetHeights(_sx, _sz, GenerateHeights(_ex-_sx, _ez - _sz, (int)Spoint.x, (int)Epoint.x, (int)Epoint.z));
+
+        float[,] Heights = new float[Width, Height];
+        GenerateHeights(ref Heights);
+        GenerateRiver(ref Heights);
+        _data.SetHeights(0, 0, Heights);
 
         return _data;
     }
 
-    private float[,] GenerateHeights(int _width, int _height, int _sx, int _ex, int _ez)
+    private void GenerateHeights(ref float[,] _field)
     {
-        float[,] _heights = new float[_width, _height];
-
-        for(int x = 0; x < _width; x++)
-            for(int z = 0; z < _height; z++)
-                _heights[x, z] = CalculateRandomHeight(x, z);
-
-        for (int x = _sx; x < _ex; x++)
-        {
-            int z = CalculateHeightSpot(x);
-            for(int i = x-RF; i < x + RF; i++)
+        float _height;
+        for(int x = 0; x < Width; x++)
+            for(int z = 0; z < Height; z++)
             {
-                for(int j = z-RF; j < z +RF; j++)
+                _height = CalculateRandomHeight(x, z);
+                if (_height < 0.2)
+                    _field[x, z] = 0.2f;
+                else
+                    _field[x, z] = _height;
+            }
+                
+    }
+
+    private void GenerateRiver(ref float[,] _field)
+    {
+        for(int c = 0; c < Vertices.Length-1; c++)
+        {
+            Vector3 _start = Vertices[c].position, _end = Vertices[c + 1].position;
+            
+            CalculateAandB(_start, _end);
+            for (int x = (int)_start.x; x < _end.x; x++)
+            {
+                int RF = Random.Range(1, 10);
+                int z = CalculateHeightSpot(x);
+                for (int i = x - RF; i < x + RF; i++)
                 {
-                    if (i < 0 || i >= _width || j < 0 || j >= _height)
-                        continue;
-                    _heights[j, i] = 0;
+                    for (int j = z - RF; j < z + RF; j++)
+                    {
+                        if (i < 0 || i >= Width || j < 0 || j >= Height)
+                            continue;
+                        _field[j, i] = -10;
+                    }
                 }
             }
         }
-
-        return _heights;
     }
 
     private float CalculateRandomHeight(float _x, float _z)
@@ -79,10 +82,10 @@ public class TerrainGenerator : MonoBehaviour
         return Mathf.PerlinNoise(_xCoord, _zCoord);
     }
 
-    private void CalculateAandB()
+    private void CalculateAandB(Vector3 _s, Vector3 _e)
     {
-        float x1 = Spoint.x, x2 = Epoint.x;
-        float z1 = Spoint.z, z2 = Epoint.z;
+        float x1 = _s.x, x2 = _e.x;
+        float z1 = _s.z, z2 = _e.z;
 
         A = (z2 - z1) / (x2 - x1);
         B = (x2 * z1 - x1 * z2) / (x2 - x1);
