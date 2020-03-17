@@ -42,8 +42,8 @@ public class TerrainGenerator : MonoBehaviour
             for(int z = 0; z < Height; z++)
             {
                 _height = CalculateRandomHeight(x, z);
-                if (_height < 0.2)
-                    _field[x, z] = 0.2f;
+                if (_height < 0.5)
+                    _field[x, z] = 0.5f;
                 else
                     _field[x, z] = _height;
             }
@@ -59,11 +59,11 @@ public class TerrainGenerator : MonoBehaviour
             CalculateAandB(_start, _end);
             for (int x = (int)_start.x; x < _end.x; x++)
             {
-                int RF = Random.Range(1, 10);
-                int z = CalculateHeightSpot(x);
+                int RF = Random.Range(0, 5);
+                int _nz = CalculateHeightSpot(x);
                 for (int i = x - RF; i < x + RF; i++)
                 {
-                    for (int j = z - RF; j < z + RF; j++)
+                    for (int j = _nz - RF; j < _nz + RF; j++)
                     {
                         if (i < 0 || i >= Width || j < 0 || j >= Height)
                             continue;
@@ -71,7 +71,27 @@ public class TerrainGenerator : MonoBehaviour
                     }
                 }
             }
+
+            for (int z = (int)_start.z; z < _end.z; z++)
+            {
+                int RF = Random.Range(0, 5);
+                int _nx = CalculateWidthSpot(z);
+                for (int i = z - RF; i < z + RF; i++)
+                {
+                    for (int j = _nx - RF; j < _nx + RF; j++)
+                    {
+                        if (i < 0 || i >= Height || j < 0 || j >= Width)
+                            continue;
+                        _field[i, j] = -10;
+                    }
+                }
+            }
         }
+    }
+
+    private void setRoundPosition(ref float[,] _field)
+    {
+
     }
 
     private float CalculateRandomHeight(float _x, float _z)
@@ -94,5 +114,10 @@ public class TerrainGenerator : MonoBehaviour
     private int CalculateHeightSpot(int x)
     {
         return (int)(A * x + B);
+    }
+
+    private int CalculateWidthSpot(int z)
+    {
+        return (int)((z - B) / A);
     }
 }
