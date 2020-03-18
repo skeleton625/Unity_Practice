@@ -11,7 +11,9 @@ public class TerrainGenerator : MonoBehaviour
     [SerializeField]
     private Transform[] Vertices;
     [SerializeField]
-    private float HeightForce;
+    private int RiverBound;
+    [SerializeField]
+    private float HeightLimit;
 
     private Terrain FieldTerrain;
     private float A, B;
@@ -22,28 +24,35 @@ public class TerrainGenerator : MonoBehaviour
         FieldTerrain.terrainData = GenerateTerrain(FieldTerrain.terrainData);
     }
 
+    private void Update()
+    {
+        if(Input.GetMouseButtonDown(1))
+            FieldTerrain.terrainData = GenerateTerrain(FieldTerrain.terrainData);
+    }
+
     private TerrainData GenerateTerrain(TerrainData _data)
     {
+        float[,] Heights = new float[Width, Height];
+
+        GenerateDefaultHeights(ref Heights);
+        GenerateRiver(ref Heights);
+
         _data.heightmapResolution = Width + 1;
         _data.size = new Vector3(Width, Depth, Height);
-
-        float[,] Heights = new float[Width, Height];
-        GenerateHeights(ref Heights);
-        GenerateRiver(ref Heights);
         _data.SetHeights(0, 0, Heights);
 
         return _data;
     }
 
-    private void GenerateHeights(ref float[,] _field)
+    private void GenerateDefaultHeights(ref float[,] _field)
     {
         float _height;
         for(int x = 0; x < Width; x++)
             for(int z = 0; z < Height; z++)
             {
                 _height = CalculateRandomHeight(x, z);
-                if (_height < 0.5)
-                    _field[x, z] = 0.5f;
+                if (_height < HeightLimit)
+                    _field[x, z] = HeightLimit;
                 else
                     _field[x, z] = _height;
             }
@@ -59,11 +68,11 @@ public class TerrainGenerator : MonoBehaviour
             CalculateAandB(_start, _end);
             for (int x = (int)_start.x; x < _end.x; x++)
             {
-                int RF = Random.Range(0, 5);
+                int _bound = Random.Range(1, RiverBound);
                 int _nz = CalculateHeightSpot(x);
-                for (int i = x - RF; i < x + RF; i++)
+                for (int i = x - _bound; i < x + _bound; i++)
                 {
-                    for (int j = _nz - RF; j < _nz + RF; j++)
+                    for (int j = _nz - _bound; j < _nz + _bound; j++)
                     {
                         if (i < 0 || i >= Width || j < 0 || j >= Height)
                             continue;
@@ -74,11 +83,11 @@ public class TerrainGenerator : MonoBehaviour
 
             for (int z = (int)_start.z; z < _end.z; z++)
             {
-                int RF = Random.Range(0, 5);
+                int _bound = Random.Range(1, RiverBound);
                 int _nx = CalculateWidthSpot(z);
-                for (int i = z - RF; i < z + RF; i++)
+                for (int i = z - _bound; i < z + _bound; i++)
                 {
-                    for (int j = _nx - RF; j < _nx + RF; j++)
+                    for (int j = _nx - _bound; j < _nx + _bound; j++)
                     {
                         if (i < 0 || i >= Height || j < 0 || j >= Width)
                             continue;
@@ -87,11 +96,6 @@ public class TerrainGenerator : MonoBehaviour
                 }
             }
         }
-    }
-
-    private void setRoundPosition(ref float[,] _field)
-    {
-
     }
 
     private float CalculateRandomHeight(float _x, float _z)
