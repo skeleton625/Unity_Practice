@@ -76,7 +76,7 @@ public class TerrainGenerator : MonoBehaviour
                     {
                         if (i < 0 || i >= Width || j < 0 || j >= Height)
                             continue;
-                        _field[j, i] = -10;
+                        _field[j, i] = 0.3f;
                     }
                 }
             }
@@ -91,7 +91,7 @@ public class TerrainGenerator : MonoBehaviour
                     {
                         if (i < 0 || i >= Height || j < 0 || j >= Width)
                             continue;
-                        _field[i, j] = -10;
+                        _field[i, j] = 0.3f;
                     }
                 }
             }
