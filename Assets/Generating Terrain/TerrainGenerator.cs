@@ -14,12 +14,23 @@ public class TerrainGenerator : MonoBehaviour
     private int RiverBound;
     [SerializeField]
     private float HeightLimit;
+    [SerializeField]
+    private float RiverDepth;
 
+    private float[,] TerrainArray;
+    private int[,] ArrayDir;
     private Terrain FieldTerrain;
     private float A, B;
 
     private void Start()
     {
+        ArrayDir = new int[8, 2]
+        {
+            {-1, -1 }, {-1, 0 },{-1, 1 },
+            {0, -1 }, {0, 1 },
+            {1, -1 }, {1, 0 }, {1, 1 }
+        };
+        TerrainArray = new float[Width, Height];
         FieldTerrain = GetComponent<Terrain>();
         FieldTerrain.terrainData = GenerateTerrain(FieldTerrain.terrainData);
     }
@@ -32,19 +43,16 @@ public class TerrainGenerator : MonoBehaviour
 
     private TerrainData GenerateTerrain(TerrainData _data)
     {
-        float[,] Heights = new float[Width, Height];
-
-        GenerateDefaultHeights(ref Heights);
-        GenerateRiver(ref Heights);
-
         _data.heightmapResolution = Width + 1;
         _data.size = new Vector3(Width, Depth, Height);
-        _data.SetHeights(0, 0, Heights);
+        GenerateDefaultHeights();
+        GenerateRiver();
+        _data.SetHeights(0, 0, TerrainArray);
 
         return _data;
     }
 
-    private void GenerateDefaultHeights(ref float[,] _field)
+    private void GenerateDefaultHeights()
     {
         float _height;
         for(int x = 0; x < Width; x++)
@@ -52,49 +60,63 @@ public class TerrainGenerator : MonoBehaviour
             {
                 _height = CalculateRandomHeight(x, z);
                 if (_height < HeightLimit)
-                    _field[x, z] = HeightLimit;
+                    TerrainArray[z, x] = HeightLimit;
                 else
-                    _field[x, z] = _height;
+                    TerrainArray[z, x] = _height;
             }
                 
     }
 
-    private void GenerateRiver(ref float[,] _field)
+    private void GenerateRiver()
     {
         for(int c = 0; c < Vertices.Length-1; c++)
         {
             Vector3 _start = Vertices[c].position, _end = Vertices[c + 1].position;
+            float value = HeightLimit - RiverBound * RiverDepth;
             
             CalculateAandB(_start, _end);
             for (int x = (int)_start.x; x < _end.x; x++)
             {
                 int _bound = Random.Range(1, RiverBound);
                 int _nz = CalculateHeightSpot(x);
-                for (int i = x - _bound; i < x + _bound; i++)
-                {
-                    for (int j = _nz - _bound; j < _nz + _bound; j++)
-                    {
-                        if (i < 0 || i >= Width || j < 0 || j >= Height)
-                            continue;
-                        _field[j, i] = 0.3f;
-                    }
-                }
+                if (_nz < 0 || _nz >= Width)
+                    continue;
+
+                TerrainArray[_nz, x] = value;
+                DownValueInArray(x, _nz, value, 0);
             }
 
             for (int z = (int)_start.z; z < _end.z; z++)
             {
                 int _bound = Random.Range(1, RiverBound);
                 int _nx = CalculateWidthSpot(z);
-                for (int i = z - _bound; i < z + _bound; i++)
-                {
-                    for (int j = _nx - _bound; j < _nx + _bound; j++)
-                    {
-                        if (i < 0 || i >= Height || j < 0 || j >= Width)
-                            continue;
-                        _field[i, j] = 0.3f;
-                    }
-                }
+                if(_nx < 0 || _nx >= Height)
+                    continue;
+
+                TerrainArray[z, _nx] = value;
+                DownValueInArray(_nx, z, value, 0);
             }
+        }
+    }
+
+    private void DownValueInArray(int x, int z, float val, int cnt)
+    {
+        if (cnt > RiverBound)
+            return;
+
+        int nx, nz;
+        for (int i = 0; i < 8; i++)
+        {
+            nx = x + ArrayDir[i, 0];
+            nz = z + ArrayDir[i, 1];
+
+            if (nx < 0 || nx >= Width || nz < 0 || nz >= Height)
+                continue;
+            else if (TerrainArray[nz, nx] < val)
+                continue;
+
+            TerrainArray[nz, nx] = val;
+            DownValueInArray(nx, nz, val + RiverDepth, cnt + 1);
         }
     }
 
