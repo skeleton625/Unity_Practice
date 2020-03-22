@@ -12,13 +12,14 @@ public class AINavigator : MonoBehaviour
 
     private Vector3 PrePosition;
     
-    private float CameraY, CameraZ;
+    private float CameraX, CameraY, CameraZ;
 
     private void Start()
     {
         Agent = GetComponent<NavMeshAgent>();
         Agent.updateRotation = false;
 
+        CameraX = MainCamera.position.x;
         CameraY = MainCamera.position.y;
         CameraZ = MainCamera.position.z;
         PrePosition = transform.position;
@@ -54,8 +55,9 @@ public class AINavigator : MonoBehaviour
         if(!PrePosition.Equals(transform.position))
         {
             Vector3 _pos = transform.position;
+
+            _pos.x += CameraX;
             _pos.y += CameraY;
-            _pos.z += CameraZ;
             MainCamera.position = _pos;
             PrePosition = transform.position;
         }
