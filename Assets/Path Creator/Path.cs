@@ -154,7 +154,9 @@ public class Path
         }
     }
 
-    /* 자동 조정 관련 함수들 */
+    /*** 자동 조정 관련 함수들 ***/
+
+    // 점들의 좌표 이동 시, 자동 조정을 갱신하는 함수
     void AutoSetAllAffectedControlPoints(int updatedAnchorIndex)
     {
         for (int i = updatedAnchorIndex - 3; i <= updatedAnchorIndex + 3; i += 3)
@@ -166,6 +168,7 @@ public class Path
         AutoSetStartAndEndControls();
     }
 
+    // 모든 점에 대해 자동 조정을 진행하는 함수
     void AutoSetAllControlPoints()
     {
         for (int i = 0; i < points.Count; i += 3)
@@ -174,12 +177,14 @@ public class Path
         AutoSetStartAndEndControls();
     }
 
+    // 시작 점, 끝 점을 제외한 중간 기준 점(anchorIndex)들에 대해 자동 조정을 진행하는 함수
     void AutoSetAnchorControlPoints(int anchorIndex)
     {
         Vector3 anchorPos = points[anchorIndex];
         Vector3 dir = Vector3.zero;
         float[] neighbourDistances = new float[2];
 
+        /* 각 기준점에 대해 이웃 점 간의 적정 거리를 계산 */
         if (anchorIndex - 3 >= 0 || isClosed)
         {
             Vector3 offset = points[LoopIndex(anchorIndex - 3)] - anchorPos;
@@ -195,6 +200,7 @@ public class Path
 
         dir.Normalize();
 
+        /* 계산한 거리를 이웃 점에게 정의 */
         for (int i = 0; i < 2; i++)
         {
             int controlIndex = anchorIndex + i * 2 - 1;
@@ -203,6 +209,7 @@ public class Path
         }
     }
 
+    // 시작 점과 끝 점에 자동 조정을 진행하는 함수
     void AutoSetStartAndEndControls()
     {
         if (!isClosed)
