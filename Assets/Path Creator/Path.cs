@@ -7,11 +7,11 @@ public class Path
 {
 
     [SerializeField, HideInInspector]
-    List<Vector3> points;
+    private List<Vector3> points;
     [SerializeField, HideInInspector]
-    bool isClosed;
+    private bool isClosed;
     [SerializeField, HideInInspector]
-    bool autoSetControlPoints;
+    private bool autoSetControlPoints;
 
     // center 좌표를 기준으로 4개의 점을 정의
     public Path(Vector3 center)
@@ -45,6 +45,40 @@ public class Path
         }
     }
 
+    // 모든 기준 점이 연결되도록 최초 시작 점과 마지막 끝 점을 연결하거나 끊는 함수
+    public bool IsClosed
+    {
+        get => isClosed;
+        set
+        {
+            isClosed = value;
+
+            /* 연결되지 않을 상태였을 경우 */
+            if (isClosed)
+            {
+                /* 시작 점의 회전 점 추가 */
+                points.Add(points[0] * 2 - points[1]);
+                /* 끝 점의 회전 점 추가 */
+                points.Add(points[points.Count - 1] * 2 - points[points.Count - 2]);
+                /* 자동 조정이 true일 경우 자동 조정 진행 */
+                if (autoSetControlPoints)
+                {
+                    AutoSetAnchorControlPoints(0);
+                    AutoSetAnchorControlPoints(points.Count - 3);
+                }
+            }
+            /* 연결되어 있는 상태였을 경우 */
+            else
+            {
+                points.RemoveRange(points.Count - 2, 2);
+                if (autoSetControlPoints)
+                {
+                    AutoSetStartAndEndControls();
+                }
+            }
+        }
+    }
+
     // 경로 위의 모든 점 개수
     public int NumPoints
     { get => points.Count; }
@@ -67,6 +101,33 @@ public class Path
         // 자동 조정이 true일 경우 새 기준 점을 추가한 것에 대해 새 조정 진행
         if (autoSetControlPoints)
             AutoSetAllAffectedControlPoints(points.Count - 1);
+    }
+
+    public void SplitSegment(Vector3 anchorPos, int segmentIndex)
+    {
+        points.InsertRange(segmentIndex * 3 + 2, new Vector3[] { Vector3.zero, anchorPos, Vector3.zero });
+        if (autoSetControlPoints)
+            AutoSetAllAffectedControlPoints(segmentIndex * 3 + 2);
+        else
+            AutoSetAnchorControlPoints(segmentIndex * 3 + 3);
+    }
+
+    // 선택한 기준 점을 삭제하는 함수
+    public void DeleteSegment(int anchorIndex)
+    {
+        if (NumSegments > 2 || !isClosed && NumSegments > 1)
+        {
+            if (anchorIndex.Equals(0))
+            {
+                if (isClosed)
+                    points[points.Count - 1] = points[2];
+                points.RemoveRange(0, 3);
+            }
+            else if (anchorIndex.Equals(points.Count - 1) && !isClosed)
+                points.RemoveRange(anchorIndex - 2, 3);
+            else
+                points.RemoveRange(anchorIndex - 1, 3);
+        }
     }
 
     // i 번째 시작 점에서 i 번째 끝 점까지의 좌표 배열 반환하는 함수
@@ -120,36 +181,6 @@ public class Path
                         points[LoopIndex(correspondingControlIndex)] = points[LoopIndex(anchorIndex)] + dir * dst;
                     }
                 }
-            }
-        }
-    }
-
-    // 모든 기준 점이 연결되도록 최초 시작 점과 마지막 끝 점을 연결하거나 끊는 함수
-    public void ToggleClosed()
-    {
-        isClosed = !isClosed;
-
-        /* 연결되지 않을 상태였을 경우 */
-        if (isClosed)
-        {
-            /* 시작 점의 회전 점 추가 */
-            points.Add(points[0] * 2 - points[1]);
-            /* 끝 점의 회전 점 추가 */
-            points.Add(points[points.Count - 1] * 2 - points[points.Count - 2]);
-            /* 자동 조정이 true일 경우 자동 조정 진행 */
-            if (autoSetControlPoints)
-            {
-                AutoSetAnchorControlPoints(0);
-                AutoSetAnchorControlPoints(points.Count - 3);
-            }
-        }
-        /* 연결되어 있는 상태였을 경우 */
-        else
-        {
-            points.RemoveRange(points.Count - 2, 2);
-            if (autoSetControlPoints)
-            {
-                AutoSetStartAndEndControls();
             }
         }
     }
@@ -224,5 +255,4 @@ public class Path
     {
         return (i + points.Count) % points.Count;
     }
-
 }
