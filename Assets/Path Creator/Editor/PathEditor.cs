@@ -10,6 +10,37 @@ public class PathEditor : Editor
     PathCreator creator;
     Path path;
 
+    public override void OnInspectorGUI()
+    {
+        base.OnInspectorGUI();
+
+        EditorGUI.BeginChangeCheck();
+        if (GUILayout.Button("Create new"))
+        {
+            Undo.RecordObject(creator, "Create new");
+            creator.CreatePath();
+            path = creator.path;
+        }
+
+        if (GUILayout.Button("Toggle closed"))
+        {
+            Undo.RecordObject(creator, "Toggle closed");
+            path.ToggleClosed();
+        }
+
+        bool autoSetControlPoints = GUILayout.Toggle(path.AutoSetControlPoints, "Auto Set Control Points");
+        if (autoSetControlPoints != path.AutoSetControlPoints)
+        {
+            Undo.RecordObject(creator, "Toggle auto set controls");
+            path.AutoSetControlPoints = autoSetControlPoints;
+        }
+
+        if (EditorGUI.EndChangeCheck())
+        {
+            SceneView.RepaintAll();
+        }
+    }
+
     void OnSceneGUI()
     {
         Input();
@@ -39,9 +70,7 @@ public class PathEditor : Editor
         {
             Vector3[] points = path.GetPointsInSegment(i);
             Handles.color = Color.black;
-            // 시작 부분의 기준점과 회전점
             Handles.DrawLine(points[1], points[0]);
-            // 끝 부분의 기준점과 회전점
             Handles.DrawLine(points[2], points[3]);
             Handles.DrawBezier(points[0], points[3], points[1], points[2], Color.green, null, 2);
         }
@@ -50,7 +79,6 @@ public class PathEditor : Editor
         for (int i = 0; i < path.NumPoints; i++)
         {
             Vector3 newPos = Handles.FreeMoveHandle(path[i], Quaternion.identity, .1f, Vector3.zero, Handles.CylinderHandleCap);
-            newPos.y = 0;
             if (path[i] != newPos)
             {
                 Undo.RecordObject(creator, "Move point");
