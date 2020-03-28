@@ -6,7 +6,6 @@ using UnityEditor;
 [CustomEditor(typeof(PathCreator))]
 public class PathEditor : Editor
 {
-
     private PathCreator creator;
     private Path path
     { get => creator.path; }
@@ -25,6 +24,12 @@ public class PathEditor : Editor
         {
             Undo.RecordObject(creator, "Create new");
             creator.CreatePath();
+        }
+
+        if(GUILayout.Button("Create River"))
+        {
+            Undo.RecordObject(creator, "Create River");
+            creator.CreateRiver();
         }
 
         bool isClosed = GUILayout.Toggle(path.IsClosed, "Path closed");
@@ -51,14 +56,14 @@ public class PathEditor : Editor
     }
 
     // Scene GUI 함수
-    void OnSceneGUI()
+    private void OnSceneGUI()
     {
         Input();
         Draw();
     }
 
     // GUI 내에서 path 객체에 경로를 추가하는 함수
-    void Input()
+    private void Input()
     {
         Event guiEvent = Event.current;
         Ray mouseRay = HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition);
@@ -136,7 +141,7 @@ public class PathEditor : Editor
     }
 
     // path의 기준점들의 경로를 GUI로 표현해주는 함수
-    void Draw()
+    private void Draw()
     {
         // 각 점들을 연결한 선에 대한 GUI 표현
         for (int i = 0; i < path.NumSegments; i++)
@@ -169,13 +174,14 @@ public class PathEditor : Editor
                 if (path[i] != newPos)
                 {
                     Undo.RecordObject(creator, "Move point");
+                    newPos = creator.SetHeights(newPos);
                     path.MovePoint(i, newPos);
                 }
             }
         }
     }
 
-    void OnEnable()
+    private void OnEnable()
     {
         creator = (PathCreator)target;
         if (creator.path == null)
