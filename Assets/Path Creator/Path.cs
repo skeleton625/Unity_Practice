@@ -90,7 +90,6 @@ public class Path
     // 새 기준 점을 anchorPos 좌표에 추가하는 함수
     public void AddSegment(Vector3 anchorPos)
     {
-        anchorPos.y = 0;
         /* 이전 점에 대한 회전 점 추가 */
         points.Add(points[points.Count - 1] * 2 - points[points.Count - 2]);
         /* 새 기준 점 anchorPos의 회전 점 추가 */
@@ -141,14 +140,12 @@ public class Path
     public void MovePoint(int i, Vector3 pos)
     {
         Vector3 deltaMove = pos - points[i];
-        deltaMove.y = 0;
         /* 
          * autoSetControlPoints -> 자동 조정 여부
          * i % 3 -> 기준 점
          */
         if (i % 3 == 0 || !autoSetControlPoints)
         {
-            pos.y = 0;
             points[i] = pos;
 
             if (autoSetControlPoints)
@@ -185,10 +182,47 @@ public class Path
         }
     }
 
+    public Vector3[] CalculateEvenlySpacedPoitns(float spacing, float resolution = 1)
+    {
+        List<Vector3> evenlySpacedPoints = new List<Vector3>();
+        evenlySpacedPoints.Add(points[0]);
+        Vector3 previousPoint = points[0];
+        float dstSinceLastEvenPoint = 0;
+
+        for(int segmentIndex = 0; segmentIndex < NumSegments; segmentIndex++)
+        {
+            Vector3[] p = GetPointsInSegment(segmentIndex);
+            float controlNetLength = Vector3.Distance(p[0], p[1]) + Vector3.Distance(p[1], p[2]) + Vector3.Distance(p[2], p[3]);
+            float estimatedCurveLength = Vector3.Distance(p[0], p[3]) + controlNetLength / 2f;
+            int divisions = Mathf.CeilToInt(estimatedCurveLength * resolution * 10);
+            float t = 0;
+
+            while(t <= 1)
+            {
+                t += .1f;
+                Vector3 pointOnCurve = Bezier.EvaluateCubic(p[0], p[1], p[2], p[3], t);
+                dstSinceLastEvenPoint += Vector3.Distance(previousPoint, pointOnCurve);
+
+                while(dstSinceLastEvenPoint >= spacing)
+                {
+                    float overshootDst = dstSinceLastEvenPoint - spacing;
+                    Vector3 newEvenlySpacedPoint = pointOnCurve + (previousPoint - pointOnCurve).normalized * overshootDst;
+                    evenlySpacedPoints.Add(newEvenlySpacedPoint);
+                    dstSinceLastEvenPoint = overshootDst;
+                    previousPoint = newEvenlySpacedPoint;
+                }
+
+                previousPoint = pointOnCurve;
+            }
+        }
+
+        return evenlySpacedPoints.ToArray();
+    }
+
     /*** 자동 조정 관련 함수들 ***/
 
     // 점들의 좌표 이동 시, 자동 조정을 갱신하는 함수
-    void AutoSetAllAffectedControlPoints(int updatedAnchorIndex)
+    private void AutoSetAllAffectedControlPoints(int updatedAnchorIndex)
     {
         for (int i = updatedAnchorIndex - 3; i <= updatedAnchorIndex + 3; i += 3)
         {
@@ -200,7 +234,7 @@ public class Path
     }
 
     // 모든 점에 대해 자동 조정을 진행하는 함수
-    void AutoSetAllControlPoints()
+    private void AutoSetAllControlPoints()
     {
         for (int i = 0; i < points.Count; i += 3)
             AutoSetAnchorControlPoints(i);
@@ -209,7 +243,7 @@ public class Path
     }
 
     // 시작 점, 끝 점을 제외한 중간 기준 점(anchorIndex)들에 대해 자동 조정을 진행하는 함수
-    void AutoSetAnchorControlPoints(int anchorIndex)
+    private void AutoSetAnchorControlPoints(int anchorIndex)
     {
         Vector3 anchorPos = points[anchorIndex];
         Vector3 dir = Vector3.zero;
@@ -241,7 +275,7 @@ public class Path
     }
 
     // 시작 점과 끝 점에 자동 조정을 진행하는 함수
-    void AutoSetStartAndEndControls()
+    private void AutoSetStartAndEndControls()
     {
         if (!isClosed)
         {
@@ -251,7 +285,7 @@ public class Path
     }
 
     // 번호 i가 점 개수보다 많아지면 시작부터 다시 증가하도록 하는 함수
-    int LoopIndex(int i)
+    private int LoopIndex(int i)
     {
         return (i + points.Count) % points.Count;
     }
