@@ -5,13 +5,16 @@ using UnityEngine;
 public class TerrainInfo : MonoBehaviour
 {
     [SerializeField]
-    private int width, height, depth;
+    private int width, height, depth, scale;
     public int Width
     { get => width; }
     public int Height
     { get => height; }
     public int Depth
     { get => depth; }
+
+    public int Scale
+    { get => scale; }
     [SerializeField]
     private float heightLimit;
     public float HeightLimit
@@ -22,5 +25,6 @@ public class TerrainInfo : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        TerrainArray = new float[width, height];
     }
 }

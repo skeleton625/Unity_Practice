@@ -5,8 +5,6 @@ using UnityEngine;
 public class TerrainGenerator : MonoBehaviour
 {
     [SerializeField]
-    private float Scale;
-    [SerializeField]
     private TerrainInfo Info;
     [SerializeField]
     private RiverGenerator River;
@@ -33,7 +31,8 @@ public class TerrainGenerator : MonoBehaviour
 
         float[,] _field = new float[Info.Width, Info.Height];
         GenerateDefaultHeights(ref _field);
-        River.GenerateStraightRiver(ref _field);
+        if(River != null)
+            River.GenerateStraightRiver(ref _field);
         _data.SetHeights(0, 0, _field);
 
         return _data;
@@ -58,8 +57,8 @@ public class TerrainGenerator : MonoBehaviour
 
     private float CalculateRandomHeight(float _x, float _z)
     {
-        float _xCoord = _x / Info.Width * Scale;
-        float _zCoord = _z / Info.Height * Scale;
+        float _xCoord = _x / Info.Width * Info.Scale;
+        float _zCoord = _z / Info.Height * Info.Scale;
 
         return Mathf.PerlinNoise(_xCoord, _zCoord);
     }
