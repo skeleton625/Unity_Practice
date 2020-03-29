@@ -14,24 +14,10 @@ public class RiverGenerator : MonoBehaviour
     private TerrainInfo Info;
 
     private float A, B;
-    private int[,] ArrayDir;
+    private int[,] ArrayDir = new int[8, 2]
+    { {-1, -1 }, {-1, 0 },{-1, 1 }, {0, -1 }, {0, 1 }, {1, -1 }, {1, 0 }, {1, 1 } };
 
-    private void Awake()
-    {
-        ArrayDir = new int[8, 2]
-        {
-            {-1, -1 }, {-1, 0 },{-1, 1 },
-            {0, -1 }, {0, 1 },
-            {1, -1 }, {1, 0 }, {1, 1 }
-        };
-    }
-
-    private void Start()
-    {
-        Info = TerrainInfo.Instance;
-    }
-
-    public void GenerateStraightRiver(ref float[,] _field)
+    public void GenerateStraightRiver()
     {
         for (int c = 0; c < Vertices.Length - 1; c++)
         {
@@ -45,8 +31,8 @@ public class RiverGenerator : MonoBehaviour
                 if (_nz < 0 || _nz >= Info.Width)
                     continue;
 
-                _field[_nz, x] = value;
-                DownValueInArray(ref _field, x, _nz, value, 0);
+                Info[_nz, x] = value;
+                DownValueInArray(x, _nz, value, 0);
             }
 
             for (int z = (int)_start.z; z < _end.z; z++)
@@ -55,13 +41,13 @@ public class RiverGenerator : MonoBehaviour
                 if (_nx < 0 || _nx >= Info.Height)
                     continue;
 
-                _field[z, _nx] = value;
-                DownValueInArray(ref _field, _nx, z, value, 0);
+                Info[z, _nx] = value;
+                DownValueInArray(_nx, z, value, 0);
             }
         }
     }
 
-    private void DownValueInArray(ref float[,] _field, int x, int z, float val, int cnt)
+    private void DownValueInArray(int x, int z, float val, int cnt)
     {
         if (cnt > RiverBound)
             return;
@@ -74,17 +60,17 @@ public class RiverGenerator : MonoBehaviour
 
             if (nx < 0 || nx >= Info.Width || nz < 0 || nz >= Info.Height)
                 continue;
-            else if (_field[nz, nx] < val)
+            else if (Info[nz, nx] < val)
                 continue;
-            else if (_field[nz, nx] > val)
+            else if (Info[nz, nx] > val)
             {
-                _field[nz, nx] = val;
-                DownValueInArray(ref _field, nx, nz, val + 0.01f, cnt);
+                Info[nz, nx] = val;
+                DownValueInArray(nx, nz, val + 0.01f, cnt);
             }
             else
             {
-                _field[nz, nx] = val;
-                DownValueInArray(ref _field, nx, nz, val + RiverDepth, cnt + 1);
+                Info[nz, nx] = val;
+                DownValueInArray(nx, nz, val + RiverDepth, cnt + 1);
             }
         }
     }
