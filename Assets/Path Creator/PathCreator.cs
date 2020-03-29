@@ -6,6 +6,7 @@ public class PathCreator : MonoBehaviour
 {
     [HideInInspector]
     public Path path;
+    private Path newPath;
 
     // Inspector 창을 통해 조절할 수 있는 변수들
     public Color anchorCol = Color.red;
@@ -15,8 +16,6 @@ public class PathCreator : MonoBehaviour
     public float anchorDiameter = .1f;
     public float controlDiameter = .075f;
     public bool displayControlPoints = true;
-    [SerializeField]
-    private Terrain FieldTerrain;
     [SerializeField]
     private TerrainInfo FieldInfo;
     [SerializeField]
@@ -30,20 +29,16 @@ public class PathCreator : MonoBehaviour
 
     private int[,] dir = new int[8, 2]
      { {-1, -1 }, {-1, 0 }, {-1, 1 }, {0, -1 }, {0, 1 }, {1, -1 }, {1, 0 }, {1, 1 } };
-    private float[,] TerrainArray;
-    private bool[,] visited;
 
     // Inspector 창에서 스크립트 컴포넌트를 Reset할 경우 실행
-    private void Reset()
-    {
-        CreatePath();
-    }
+    private void Reset() { CreatePath(); }
+
+    private void Start() { CreatePath(); }
 
     public void CreatePath()
     {
         Vector3 _pos = transform.position;
-        TerrainArray = FieldTerrain.terrainData.GetHeights(0, 0, FieldInfo.Width, FieldInfo.Height);
-        _pos.y = FieldInfo.Depth * TerrainArray[(int)_pos.x, (int)_pos.z];
+        _pos.y = FieldInfo.Depth * FieldInfo[(int)_pos.x, (int)_pos.z];
         path = new Path(_pos);
     }
 
@@ -51,38 +46,33 @@ public class PathCreator : MonoBehaviour
     {
         Vector3[] points = path.CalculateEvenlySpacedPoitns(spacing, resolution);
 
-        FieldTerrain.terrainData.heightmapResolution = FieldInfo.Width + 1;
-        FieldTerrain.terrainData.size = new Vector3(FieldInfo.Width, FieldInfo.Depth, FieldInfo.Height);
-
-        if(TerrainArray == null)
-        {
-            TerrainArray = FieldTerrain.terrainData.GetHeights(0, 0, FieldInfo.Width, FieldInfo.Height);
-        }
-
-        visited = new bool[FieldInfo.Width, FieldInfo.Height];
+        bool[,] visited = new bool[FieldInfo.Width, FieldInfo.Height];
+        newPath = new Path(points[0]);
 
         int _x, _z;
         foreach(Vector3 p in points)
         {
             _x = (int)p.x;
             _z = (int)p.z;
-            GameObject g = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            g.transform.position = p;
-            g.transform.localScale = Vector3.one * spacing * .5f;
 
             if (!visited[_z, _x])
             {
-                TerrainArray[_z, _x] -= DefaultDepth;
-                SpreadRiver(_x, _z, 0, DefaultDepth);
+                newPath.AddSegment(SetHeights(_x, _z));
+                FieldInfo[_z, _x] -= DefaultDepth;
+                SpreadRiver(ref visited, _x, _z, 0);
             }
             else
-                SpreadRiver(_x, _z, 0, DefaultDepth);
+                SpreadRiver(ref visited, _x, _z, 0);
         }
 
-        FieldTerrain.terrainData.SetHeights(0, 0, TerrainArray);
+       
+        FieldInfo.ApplyPreTerrainHeights();
+        newPath.DeleteSegment(0);
+        newPath.DeleteSegment(1);
+        path = newPath;
     }
 
-    private void SpreadRiver(int x, int z, int cnt, float val)
+    private void SpreadRiver(ref bool[,] visited, int x, int z, int cnt)
     {
         if (cnt > RiverWidth)
             return;
@@ -97,22 +87,17 @@ public class PathCreator : MonoBehaviour
             if(!visited[nz, nx])
             {
                 visited[nz, nx] = true;
-                TerrainArray[nz, nx] -= val;
-                SpreadRiver(nx, nz, cnt + 1, DefaultDepth);
+                FieldInfo[nz, nx] -= DefaultDepth;
+                SpreadRiver(ref visited, nx, nz, cnt + 1);
             }
             else
-                SpreadRiver(nx, nz, cnt + 1, DefaultDepth);
+                SpreadRiver(ref visited, nx, nz, cnt + 1);
         }
     }
 
-    public Vector3 SetHeights(Vector3 pos)
+    public Vector3 SetHeights(float x, float z)
     {
-        pos.y = FieldInfo.Depth * TerrainArray[(int)pos.x, (int)pos.z];
-        return pos;
-    }
-
-    private void OnEnable()
-    {
-        TerrainArray = FieldTerrain.terrainData.GetHeights(0, 0, FieldInfo.Width, FieldInfo.Height);
+        float y = FieldInfo.Depth * FieldInfo[(int)z, (int)x];
+        return new Vector3(x, y, z);
     }
 }
