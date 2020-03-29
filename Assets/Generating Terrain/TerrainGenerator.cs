@@ -9,36 +9,26 @@ public class TerrainGenerator : MonoBehaviour
     [SerializeField]
     private RiverGenerator River;
 
-    private Terrain FieldTerrain;
-
-
-    private void Start()
+    private void Awake()
     {
-        FieldTerrain = GetComponent<Terrain>();
-        FieldTerrain.terrainData = GenerateTerrain(FieldTerrain.terrainData);
+        GenerateTerrain();
     }
 
     private void Update()
     {
         if(Input.GetMouseButtonDown(1))
-            FieldTerrain.terrainData = GenerateTerrain(FieldTerrain.terrainData);
+            GenerateTerrain();
     }
 
-    private TerrainData GenerateTerrain(TerrainData _data)
+    private void GenerateTerrain()
     {
-        _data.heightmapResolution = Info.Width + 1;
-        _data.size = new Vector3(Info.Width, Info.Depth, Info.Height);
-
-        float[,] _field = new float[Info.Width, Info.Height];
-        GenerateDefaultHeights(ref _field);
+        GenerateDefaultHeights();
         if(River != null)
-            River.GenerateStraightRiver(ref _field);
-        _data.SetHeights(0, 0, _field);
-
-        return _data;
+            River.GenerateStraightRiver();
+        Info.ApplyPreTerrainHeights();
     }
 
-    private void GenerateDefaultHeights(ref float[,] _field)
+    private void GenerateDefaultHeights()
     {
         int _width = Info.Width, _height = Info.Height;
         float _depth, _limit = Info.HeightLimit;
@@ -48,9 +38,9 @@ public class TerrainGenerator : MonoBehaviour
             {
                 _depth = CalculateRandomHeight(x, z);
                 if (_depth < _limit)
-                    _field[z, x] = _limit;
+                    Info[z, x] = _limit;
                 else
-                    _field[z, x] = _depth;
+                    Info[z, x] = _depth;
             }
                 
     }
