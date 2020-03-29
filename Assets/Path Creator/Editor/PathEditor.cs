@@ -174,11 +174,16 @@ public class PathEditor : Editor
                 if (path[i] != newPos)
                 {
                     Undo.RecordObject(creator, "Move point");
-                    newPos = creator.SetHeights(newPos);
+                    newPos = creator.SetHeights(newPos.x, newPos.z);
                     path.MovePoint(i, newPos);
                 }
             }
         }
+    }
+
+    private void Start()
+    {
+        Draw();
     }
 
     private void OnEnable()
