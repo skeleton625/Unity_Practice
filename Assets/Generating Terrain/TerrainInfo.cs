@@ -13,8 +13,18 @@ public class TerrainInfo : MonoBehaviour
     private float[,] hArray;
     public float this[int x, int z]
     {
-        get => hArray[x, z];
-        set => hArray[x, z] = value;
+        get
+        {
+            if (x < 0 || z < 0 || x >= height || z >= width)
+                return 0;
+            return hArray[x, z];
+        }
+        set
+        {
+            if (x < 0 || z < 0 || x >= height || z >= width)
+                return;
+            hArray[x, z] = value;
+        }
     }
 
     public int Width
@@ -30,7 +40,7 @@ public class TerrainInfo : MonoBehaviour
 
     private void Awake()
     {
-        hArray = FieldTerrain.terrainData.GetHeights(0, 0, width, height);
+        hArray = new float[width, height];
     }
 
     public void ApplyPreTerrainHeights()
