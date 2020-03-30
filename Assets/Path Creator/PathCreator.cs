@@ -7,6 +7,7 @@ public class PathCreator : MonoBehaviour
     [HideInInspector]
     public Path path;
     private Path newPath;
+    private TexCreator texture;
 
     // Inspector 창을 통해 조절할 수 있는 변수들
     public Color anchorCol = Color.red;
@@ -27,13 +28,17 @@ public class PathCreator : MonoBehaviour
     [SerializeField]
     private float resolution = 1f;
 
+
     private int[,] dir = new int[8, 2]
      { {-1, -1 }, {-1, 0 }, {-1, 1 }, {0, -1 }, {0, 1 }, {1, -1 }, {1, 0 }, {1, 1 } };
 
     // Inspector 창에서 스크립트 컴포넌트를 Reset할 경우 실행
     private void Reset() { CreatePath(); }
 
-    private void Start() { CreatePath(); }
+    private void Start() {
+        texture = GetComponent<TexCreator>();
+        CreatePath();
+    }
 
     public void CreatePath()
     {
@@ -70,6 +75,7 @@ public class PathCreator : MonoBehaviour
         newPath.DeleteSegment(0);
         newPath.DeleteSegment(1);
         path = newPath;
+        //texture.UpdateTexture();
     }
 
     private void SpreadRiver(ref bool[,] visited, int x, int z, int cnt)
