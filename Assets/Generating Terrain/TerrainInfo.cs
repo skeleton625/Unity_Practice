@@ -4,13 +4,18 @@ using UnityEngine;
 
 public class TerrainInfo : MonoBehaviour
 {
+    // Terrain의 가로, 세로, 깊이, 높낮이 규모 정의
+    /* Terrain의 가로, 세로 정의의 경우, 2의 제곱 수로 정의해야 함 */
     [SerializeField]
     private int width, height, depth, scale;
     [SerializeField]
     private Terrain FieldTerrain;
     [SerializeField]
     private float heightLimit;
+    
+    // Terrain의 높낮이 배열
     private float[,] hArray;
+    // TerrainInfo 객체를 통해 높낮이 배열에 접근할 수 있음
     public float this[int x, int z]
     {
         get
@@ -27,22 +32,18 @@ public class TerrainInfo : MonoBehaviour
         }
     }
 
-    public int Width
-    { get => width; }
-    public int Height
-    { get => height; }
-    public int Depth
-    { get => depth; }
-    public int Scale
-    { get => scale; }
-    public float HeightLimit
-    { get => heightLimit; }
+    public int Width { get => width; }
+    public int Height { get => height; }
+    public int Depth { get => depth; }
+    public int Scale { get => scale; }
+    public float HeightLimit { get => heightLimit; }
 
     private void Awake()
     {
         hArray = new float[width, height];
     }
 
+    //  현재 정의된 높낮이 배열로 Terrain의 전체 높낮이를 설정하는 함수
     public void ApplyPreTerrainHeights()
     {
         TerrainData data = FieldTerrain.terrainData;
@@ -51,10 +52,5 @@ public class TerrainInfo : MonoBehaviour
 
         data.SetHeights(0, 0, hArray);
         FieldTerrain.terrainData = data;
-    }
-
-    public float[,] GetPreHeights()
-    {
-        return hArray;
     }
 }
