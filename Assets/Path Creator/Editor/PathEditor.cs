@@ -23,13 +23,19 @@ public class PathEditor : Editor
         if (GUILayout.Button("Create new"))
         {
             Undo.RecordObject(creator, "Create new");
-            creator.CreatePath();
+            if (creator.AutoRiver)
+                creator.CreateRandomPath();
+            else
+                creator.CreatePath();
         }
 
         if(GUILayout.Button("Create River"))
         {
             Undo.RecordObject(creator, "Create River");
-            creator.CreateRiver();
+            if (creator.AutoRiver)
+                creator.CreateRandomRiver();
+            else
+                creator.CreateRiver();
         }
 
         bool isClosed = GUILayout.Toggle(path.IsClosed, "Path closed");
