@@ -12,7 +12,8 @@ public class TexCreator : MonoBehaviour
     private float texWidth;
     [SerializeField, Range(.05f, 1.5f)]
     private float spacing;
-    public bool autoUpdate;
+    [SerializeField]
+    private TerrainInfo FieldInfo;
 
     public void UpdateTexture()
     {
@@ -47,8 +48,8 @@ public class TexCreator : MonoBehaviour
             forward.Normalize();
             Vector3 left = new Vector3(forward.z, forward.y, -forward.x);
 
-            verts[vertIndex] = points[i] - left * texWidth * .5f;
-            verts[vertIndex + 1] = points[i] + left * texWidth * .5f;
+            verts[vertIndex] = SetMeshHeights(points[i] - left * texWidth);
+            verts[vertIndex + 1] = SetMeshHeights(points[i] + left * texWidth);
 
             float completionPercent = i / (float)(points.Length - 1);
             float v = 1 - Mathf.Abs(2 * completionPercent - 1);
@@ -73,34 +74,24 @@ public class TexCreator : MonoBehaviour
         Mesh mesh = new Mesh();
         mesh.vertices = verts;
         mesh.triangles = tris;
+        mesh.RecalculateBounds();
+        mesh.RecalculateNormals();
         mesh.uv = uvs;
         return mesh;
     }
 
-    private Vector3 TransformDirection(Vector3 p, Transform t, PathSpace space)
+    private Vector3 SetMeshHeights(Vector3 point)
     {
-        Quaternion constrainedRot = t.rotation;
-        ConstrainRot(ref constrainedRot, space);
-        return constrainedRot * p;
-    }
+        int x = (int)point.x;
+        int z = (int)point.z;
+        Vector3 pos = new Vector3(x, FieldInfo.Depth * FieldInfo[z, x], z);
 
-    private void ConstrainRot(ref Quaternion rot, PathSpace space)
-    {
-        if (space == PathSpace.xy)
-        {
-            var eulerAngles = rot.eulerAngles;
-            if (eulerAngles.x != 0 || eulerAngles.y != 0)
-            {
-                rot = Quaternion.AngleAxis(eulerAngles.z, Vector3.forward);
-            }
-        }
-        else if (space == PathSpace.xz)
-        {
-            var eulerAngles = rot.eulerAngles;
-            if (eulerAngles.x != 0 || eulerAngles.z != 0)
-            {
-                rot = Quaternion.AngleAxis(eulerAngles.y, Vector3.up);
-            }
-        }
+        /*
+        GameObject g = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        g.transform.position = pos;
+        g.transform.localScale = new Vector3(2f, 2f, 2f);
+        */
+
+        return pos;
     }
 }
