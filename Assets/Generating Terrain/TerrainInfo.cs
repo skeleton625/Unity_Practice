@@ -53,4 +53,11 @@ public class TerrainInfo : MonoBehaviour
         data.SetHeights(0, 0, hArray);
         FieldTerrain.terrainData = data;
     }
+
+    public float SetRealHeight(int x, int z)
+    {
+        if (x < 0 || x >= height || z < 0 || z >= width)
+            return 0;
+        return depth * hArray[z, x];
+    }
 }
