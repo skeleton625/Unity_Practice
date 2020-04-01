@@ -17,6 +17,10 @@ public class PathCreator : MonoBehaviour
     public float anchorDiameter = .1f;
     public float controlDiameter = .075f;
     public bool displayControlPoints = true;
+    public bool AutoRiver;
+
+    [SerializeField]
+    private int RandomSize;
     // Path를 통한 강 생성 관련 변수들
     [SerializeField]
     private TerrainInfo FieldInfo;
@@ -41,12 +45,36 @@ public class PathCreator : MonoBehaviour
         CreatePath();
     }
 
+    public void CreateRandomPath()
+    {
+        
+    }
+
     // 새 경로 생성 함수
     public void CreatePath()
     {
-        Vector3 _pos = transform.position;
-        _pos.y = FieldInfo.Depth * FieldInfo[(int)_pos.x, (int)_pos.z];
-        path = new Path(_pos);
+        int x = (int)(transform.position.x - transform.localScale.x / 2);
+        int z = (int)(transform.position.z - transform.localScale.z / 2);
+        float y = FieldInfo.SetRealHeight(x, z);
+        path = new Path(new Vector3(x, y, z));
+    }
+
+    public void CreateRandomRiver()
+    {
+        int minX = (int)(transform.position.x - transform.localScale.x / 2);
+        int maxX = (int)(transform.position.x + transform.localScale.x / 2);
+        int minZ = (int)(transform.position.z - transform.localScale.z / 2) ;
+        int maxZ = (int)(transform.position.z + transform.localScale.z / 2);
+        int z;
+        float h;
+        for(int x = minX + RandomSize; x < maxX; x += RandomSize)
+        {
+            z = Random.Range(minZ, maxZ);
+            h = FieldInfo.SetRealHeight(x, z);
+            path.AddSegment(new Vector3(x, h, z));
+        }
+
+        CreateRiver();
     }
 
     public void CreateRiver()
@@ -86,7 +114,7 @@ public class PathCreator : MonoBehaviour
         /* 강 끝 점을 경로에 추가 */
         _x = (int)points[points.Length - 1].x;
         _z = (int)points[points.Length - 1].z;
-        newPath.AddSegment(SetHeights(_x, _z));
+        newPath.AddSegment(new Vector3(_x, points[points.Length - 2].y, _z));
 
         /* 현재 정의된 높낮이를 Terrain의 높낮이로 정의 */
         FieldInfo.ApplyPreTerrainHeights();
@@ -94,6 +122,7 @@ public class PathCreator : MonoBehaviour
         newPath.DeleteSegment(0);
         newPath.DeleteSegment(1);
         path = newPath;
+        path.AutoSetControlPoints = true;
 
         /* 새 경로에 대한 Mesh 계산 및 생성 */
         if(texture != null)
@@ -129,7 +158,7 @@ public class PathCreator : MonoBehaviour
     /* Terrain의 상대적 높낮이(0~1)가 아닌 실제 높낮이를 계산하는 함수 */
     public Vector3 SetHeights(float x, float z)
     {
-        float y = FieldInfo.Depth * FieldInfo[(int)z, (int)x];
+        float y = FieldInfo.SetRealHeight((int)x, (int)z);
         return new Vector3(x, y, z);
     }
 }
