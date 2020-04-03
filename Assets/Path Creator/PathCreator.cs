@@ -6,7 +6,11 @@ public class PathCreator : MonoBehaviour
 {
     [HideInInspector]
     public Path path;
-    private TexCreator texture;
+    private Color[] craterData;
+    [SerializeField]
+    private Texture2D DepthTex;
+    private TexCreator creator;
+    private enum DeformMode { RaiseLower, Flatten, Smooth }
 
     // Inspector 창을 통해 조절할 수 있는 변수들
     /* Path UI의 색, 크기, 회전 점의 표시여부 */
@@ -18,6 +22,8 @@ public class PathCreator : MonoBehaviour
     public float controlDiameter = .075f;
     public bool displayControlPoints = true;
     public bool AutoRiver;
+
+    private float OffsetX, OffsetZ;
 
     [SerializeField]
     private int RandomSize;
@@ -32,16 +38,27 @@ public class PathCreator : MonoBehaviour
     private float spacing = .1f;
     [SerializeField]
     private float resolution = 1f;
+    [SerializeField]
+    private float strength;
+    private float strengthNormalized;
+
+    private int DefaultTexWidth, DefaultTexHeight;
 
     // 강 너비를 위한 전방향 배열
     private int[,] dir = new int[8, 2]
-     { {-1, -1 }, {-1, 0 }, {-1, 1 }, {0, -1 }, {0, 1 }, {1, -1 }, {1, 0 }, {1, 1 } };
+     { {-1, 0 }, {0, 1 }, {0, -1 }, {1, 0 }, {-1, 1 }, {1, -1 }, {-1, -1 }, {1, 1 } };
 
     // Inspector 창에서 스크립트 컴포넌트를 Reset할 경우 실행
     private void Reset() { CreatePath(); }
 
     private void Start() {
-        texture = GetComponent<TexCreator>();
+        OffsetX = Random.Range(0, 9999f);
+        OffsetZ = Random.Range(0, 9999f);
+        DefaultTexWidth = DepthTex.width;
+        DefaultTexHeight = DepthTex.height;
+        craterData = DepthTex.GetPixels();
+        creator = GetComponent<TexCreator>();
+        strengthNormalized = strength / 9.0f;
         CreatePath();
     }
 
@@ -92,23 +109,39 @@ public class PathCreator : MonoBehaviour
         newPath.AddSegment(SetHeights(_x, _z));
 
         /* 시작, 끝 점을 제외한 나머지 점들에 대해 Terrain 높낮이를 조절 */
-        for(int i = 1; i < points.Length - 1; i++)
+        for (int i = 1; i < points.Length - 1; i++)
         {
             _x = (int)points[i].x;
             _z = (int)points[i].z;
 
             /* 방문하지 않은 좌표에 대해서만 조절 가능 */
+            /*
             if (!visited[_z, _x])
             {
                 visited[_z, _x] = true;
-                newPath.AddSegment(SetHeights(_x, _z));
-                FieldInfo[_z, _x] -= DefaultDepth;
-                /* 강의 퍼짐을 표현하기 위한 좌표 주위의 좌표들에 대해 높낮이를 정의 */
+                FieldInfo[_z, _x] -= DefaultDepth;//CalculateRandomHeight(_x, _z);
+                // 강의 퍼짐을 표현하기 위한 좌표 주위의 좌표들에 대해 높낮이를 정의
                 SpreadRiver(ref visited, _x, _z, 0);
             }
             else
-                /* 강의 퍼짐을 표현하기 위한 좌표 주위의 좌표들에 대해 높낮이를 정의 */
+                // 강의 퍼짐을 표현하기 위한 좌표 주위의 좌표들에 대해 높낮이를 정의
                 SpreadRiver(ref visited, _x, _z, 0);
+            */
+
+            newPath.AddSegment(SetHeights(_x + DepthTex.height / 2, _z + DepthTex.width / 2));
+            _x += Random.Range(-2, 2);
+            _z += Random.Range(-2, 2);
+            //DepthTex.Resize(DefaultTexWidth + Random.Range(-2, 2), DefaultTexHeight + Random.Range(-2, 2));
+            //craterData = DepthTex.GetPixels();
+            for (int j = 0; j < DepthTex.height; j++)
+            {
+                for (int k = 0; k < DepthTex.width; k++)
+                {
+                    float y = FieldInfo[_z + j, _x + k] - craterData[j * DepthTex.width + k].a * strength / 1500f;
+                    FieldInfo[_z + j, _x + k] = y;
+                    //Debug.Log(y);
+                }
+            }
         }
 
         /* 강 끝 점을 경로에 추가 */
@@ -125,8 +158,8 @@ public class PathCreator : MonoBehaviour
         path.AutoSetControlPoints = true;
 
         /* 새 경로에 대한 Mesh 계산 및 생성 */
-        if(texture != null)
-            texture.UpdateTexture();
+        if(creator != null)
+            creator.UpdateTexture();
     }
 
     /* 주어진 x, z 좌표를 기준으로 주위 좌표를 같은 높이로 정의하는 함수 */
@@ -137,7 +170,7 @@ public class PathCreator : MonoBehaviour
 
         int nx, nz;
         /* 기준 좌표에서 팔방으로 존재하는 좌표에 같은 높이를 적용 */
-        for(int i = 0; i < 8; i++)
+        for(int i = 0; i < 6; i++)
         {
             nx = x + dir[i, 0];
             nz = z + dir[i, 1];
@@ -147,7 +180,7 @@ public class PathCreator : MonoBehaviour
             {
                 visited[nz, nx] = true;
                 /*현재 높낮이를 표현할 수 있도록 정의된 깊이에서 현재 높낮이를 뺌 */
-                FieldInfo[nz, nx] -= DefaultDepth;
+                FieldInfo[nz, nx] -= (DefaultDepth);//CalculateRandomHeight(nx, nz);
                 SpreadRiver(ref visited, nx, nz, cnt + 1);
             }
             else
@@ -160,5 +193,13 @@ public class PathCreator : MonoBehaviour
     {
         float y = FieldInfo.SetRealHeight((int)x, (int)z);
         return new Vector3(x, y, z);
+    }
+
+    private float CalculateRandomHeight(float _x, float _z)
+    {
+        float _xCoord = _x / FieldInfo.Width * FieldInfo.Scale + OffsetX;
+        float _zCoord = _z / FieldInfo.Height * FieldInfo.Scale + OffsetZ;
+
+        return Mathf.PerlinNoise(_xCoord, _zCoord);
     }
 }
