@@ -213,86 +213,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
---- !u!1 &437029598
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 437029601}
-  - component: {fileID: 437029600}
-  - component: {fileID: 437029599}
-  m_Layer: 0
-  m_Name: GameObject
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &437029599
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 437029598}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc9be9e4e4563484bb9a6b137dd84ce4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  NewMesh: {fileID: 5574735345178896076, guid: 86a3c3bfe236764438574507b70d348a, type: 3}
-  texWidth: 8
-  spacing: 1
-  FieldInfo: {fileID: 566944491}
---- !u!114 &437029600
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 437029598}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da8956bc0426c8e4ba54af837a88e79f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  path:
-    points: []
-    isClosed: 0
-    autoSetControlPoints: 0
-  DepthTex: {fileID: 0}
-  anchorCol: {r: 1, g: 0, b: 0, a: 1}
-  controlCol: {r: 1, g: 1, b: 1, a: 1}
-  segmentCol: {r: 0, g: 1, b: 0, a: 1}
-  selectedSegmentCol: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  anchorDiameter: 1
-  controlDiameter: 0.5
-  displayControlPoints: 1
-  AutoRiver: 0
-  RandomSize: 0
-  FieldInfo: {fileID: 566944491}
-  DefaultDepth: 0.1
-  RiverWidth: 5
-  spacing: 0.1
-  resolution: 1
-  strength: 0
---- !u!4 &437029601
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 437029598}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 4
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &566944487
 GameObject:
   m_ObjectHideFlags: 0
@@ -386,7 +306,7 @@ MonoBehaviour:
   width: 512
   height: 512
   depth: 20
-  scale: 5
+  scale: 10
   FieldTerrain: {fileID: 566944489}
   heightLimit: 0.5
 --- !u!114 &566944492
@@ -441,7 +361,6 @@ MonoBehaviour:
     points: []
     isClosed: 0
     autoSetControlPoints: 0
-  DepthTex: {fileID: 2800000, guid: 2c30fc843e6256a49b8937fff44e9d37, type: 3}
   anchorCol: {r: 1, g: 0, b: 0, a: 1}
   controlCol: {r: 1, g: 1, b: 1, a: 1}
   segmentCol: {r: 0, g: 1, b: 0, a: 1}
@@ -450,13 +369,17 @@ MonoBehaviour:
   controlDiameter: 0.5
   displayControlPoints: 0
   AutoRiver: 1
-  RandomSize: 50
+  DepthTex:
+  - {fileID: 2800000, guid: f2e2047de9ff37641b9ef6698f2f4739, type: 3}
+  - {fileID: 2800000, guid: fce2519ca1788d946814af31e27499e3, type: 3}
+  - {fileID: 2800000, guid: 3619117fad9771443b07f7e80115f72b, type: 3}
+  - {fileID: 2800000, guid: 0818a20b4cea2b34f807f4cdc97749f3, type: 3}
+  - {fileID: 2800000, guid: 1119ac37ff83afc49b7dccbf3ba4c47a, type: 3}
   FieldInfo: {fileID: 566944491}
-  DefaultDepth: 0.1
-  RiverWidth: 2
-  spacing: 10
+  RandomSize: 50
+  spacing: 5
   resolution: 1
-  strength: 200
+  strength: 150
 --- !u!23 &664401349
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -511,13 +434,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 664401347}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 256, y: 0, z: 138.5}
-  m_LocalScale: {x: 337.0291, y: 1, z: 89.55048}
+  m_LocalRotation: {x: -0, y: -0.42810643, z: -0, w: 0.90372837}
+  m_LocalPosition: {x: 276, y: 0, z: 273}
+  m_LocalScale: {x: 500, y: 1, z: 100}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -50.695004, z: 0}
 --- !u!114 &664401352
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -531,7 +454,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   NewMesh: {fileID: 5574735345178896076, guid: 86a3c3bfe236764438574507b70d348a, type: 3}
-  texWidth: 10
+  texWidth: 15
   spacing: 1
   FieldInfo: {fileID: 566944491}
 --- !u!1 &1300880712
