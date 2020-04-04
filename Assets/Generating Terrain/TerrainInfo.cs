@@ -60,4 +60,13 @@ public class TerrainInfo : MonoBehaviour
             return 0;
         return depth * hArray[z, x];
     }
+
+    public Vector3 SetRealHeight(Vector3 pos)
+    {
+        if (pos.x < 0 || pos.x >= height || pos.z < 0 || pos.z >= width)
+            return pos;
+
+        pos.y = depth * hArray[(int)pos.z, (int)pos.x];
+        return pos;
+    }
 }
