@@ -23,10 +23,7 @@ public class PathEditor : Editor
         if (GUILayout.Button("Create new"))
         {
             Undo.RecordObject(creator, "Create new");
-            if (creator.AutoRiver)
-                creator.CreateRandomPath();
-            else
-                creator.CreatePath();
+            creator.CreatePath();
         }
 
         if(GUILayout.Button("Create River"))
