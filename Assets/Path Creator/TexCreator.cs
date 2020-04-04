@@ -18,45 +18,43 @@ public class TexCreator : MonoBehaviour
     public void UpdateTexture()
     {
         Path path = GetComponent<PathCreator>().path;
-        Vector3[] points = path.CalculateEvenlySpacedPoitns(spacing);
+        //Vector3[] points = path.Points.ToArray();
         GameObject RiverMesh = Instantiate(NewMesh, Vector3.zero, Quaternion.identity);
         RiverMesh.transform.position = new Vector3(0, -1.1f, 0);
-        RiverMesh.GetComponent<MeshFilter>().mesh = CreateTexMesh(points);
+        RiverMesh.GetComponent<MeshFilter>().mesh = CreateTexMesh();
     }
 
-    private Mesh CreateTexMesh(Vector3[] points)
+    private Mesh CreateTexMesh()
     {
-        Vector3[] verts = new Vector3[points.Length * 2];
+
+        Path path = GetComponent<PathCreator>().path;
+        Vector3[] verts = new Vector3[path.NumPoints * 2];
         Vector2[] uvs = new Vector2[verts.Length];
-        int numTris = 2 * (points.Length - 1);
+        int numTris = 2 * (path.NumPoints - 1);
         int[] tris = new int[numTris * 3];
         int vertIndex = 0;
         int triIndex = 0;
 
-        for (int i = 0; i < points.Length; i++)
+        for (int i = 0; i < path.NumPoints; i+=3)
         {
             Vector3 forward = Vector3.zero;
-            if (i < points.Length - 1)
-            {
-                forward += points[(i + 1) % points.Length] - points[i];
-            }
+            if (i < path.NumPoints - 1)
+                forward += path[(i + 1) % path.NumPoints] - path[i];
             if (i > 0)
-            {
-                forward += points[i] - points[(i - 1 + points.Length) % points.Length];
-            }
+                forward += path[i] - path[(i - 1 + path.NumPoints) % path.NumPoints];
 
             forward.Normalize();
             Vector3 left = new Vector3(forward.z, forward.y, -forward.x);
 
-            verts[vertIndex] = SetMeshHeights(points[i] - left * texWidth);
-            verts[vertIndex + 1] = SetMeshHeights(points[i] + left * texWidth);
+            verts[vertIndex] = SetMeshHeights(path[i] - left * texWidth);
+            verts[vertIndex + 1] = SetMeshHeights(path[i] + left * texWidth);
 
-            float completionPercent = i / (float)(points.Length - 1);
+            float completionPercent = i / (float)(path.NumPoints - 1);
             float v = 1 - Mathf.Abs(2 * completionPercent - 1);
             uvs[vertIndex] = new Vector2(1, v);
             uvs[vertIndex + 1] = new Vector2(0, v);
 
-            if (i < points.Length - 1)
+            if (i < path.NumPoints - 1)
             {
                 tris[triIndex] = vertIndex;
                 tris[triIndex + 1] = (vertIndex + 2) % verts.Length;
