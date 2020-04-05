@@ -36,6 +36,10 @@ public class PathCreator : MonoBehaviour
     private float realStrength;
     // 강 Texture 생성 객체
     private TexCreator creator;
+    // 주류의 비주류 Object
+    [SerializeField]
+    private GameObject SubRiver;
+
 
     // Inspector 창에서 스크립트 컴포넌트를 Reset할 경우 실행
     private void Reset() { CreatePath(); }
@@ -59,34 +63,38 @@ public class PathCreator : MonoBehaviour
         path = new Path(FieldInfo.SetRealHeight(startPos));
     }
 
-    public void CreateRandomRiver()
+    public void CreateRandomRiver(int BrushSize)
     {
         // 랜덤 경로를 위한 최소, 최대 범위 지정
-        int minX = (int)(- transform.localScale.x / 2);
-        int maxX = (int)(transform.localScale.x / 2);
-        int minZ = (int)(- transform.localScale.z / 2);
-        int maxZ = (int)(transform.localScale.z / 2);
+        float minX = - transform.localScale.x / 2;
+        float maxX = transform.localScale.x / 2;
+        int minZ = (int) - transform.localScale.z / 2;
+        int maxZ = (int) transform.localScale.z / 2;
 
         // 랜덤 경로 지정
         int z;
-        for(int x = minX + RandomSize; x < maxX; x += RandomSize)
+        for(int x = (int)minX + RandomSize; x < maxX; x += RandomSize)
         {
             z = Random.Range(minZ, maxZ);
             Vector3 riverPos = new Vector3(x, 0, z);
             riverPos = transform.rotation * riverPos;
 
-            int nx = (int)(transform.position.x + riverPos.x);
-            int nz = (int)(transform.position.z + riverPos.z);
+            riverPos.x = transform.position.x + riverPos.x;
+            riverPos.z = transform.position.z + riverPos.z;
 
-            riverPos.x = nx;
-            riverPos.z = nz;
             path.AddSegment(FieldInfo.SetRealHeight(riverPos));
+            path.AutoSetControlPoints = true;
         }
 
-        CreateRiver();
+        CreateRiver(BrushSize);
     }
 
-    public void CreateRiver()
+    private void CreateSubRiver()
+    {
+
+    }
+
+    public void CreateRiver(int BrushSize)
     {
         /* 강 생성을 위한 선 위의 점 좌표, 방문 여부 배열 정의 */
         Vector3[] points = path.CalculateEvenlySpacedPoitns(spacing, resolution);
@@ -96,20 +104,17 @@ public class PathCreator : MonoBehaviour
         realStrength = strength / 1500.0f;
 
         /* 강 시작 점을 경로에 추가 */
-        int _x, _z, depNum;
+        int _x, _z;
         _x = (int)points[0].x;
         _z = (int)points[0].z;
         newPath.AddSegment(SetHeights(_x, _z));
-
 
         /* 시작, 끝 점을 제외한 나머지 점들에 대해 Terrain 높낮이를 조절 */
         for (int i = 1; i < points.Length - 1; i++)
         {
             _x = (int)points[i].x;
             _z = (int)points[i].z;
-            depNum = Random.Range(0, DepthTex.Length-1);
-
-            newPath.AddSegment(SetHeights(_x + DepthTex[depNum].height / 2, _z + DepthTex[depNum].width / 2));
+            newPath.AddSegment(SetHeights(_x + DepthTex[BrushSize].height / 2, _z + DepthTex[BrushSize].width / 2));
             _x += Random.Range(-1, 1);
             _z += Random.Range(-1, 1);
 
@@ -117,14 +122,14 @@ public class PathCreator : MonoBehaviour
             float y;
             int bx, bz;
 
-            Color[] brushData = DepthTex[depNum].GetPixels();
-            for (int j = 0; j < DepthTex[depNum].height; j++)
+            Color[] brushData = DepthTex[BrushSize].GetPixels();
+            for (int j = 0; j < DepthTex[BrushSize].height; j++)
             {
-                for (int k = 0; k < DepthTex[depNum].width; k++)
+                for (int k = 0; k < DepthTex[BrushSize].width; k++)
                 {
                     bx = _x + k;
                     bz = _z + j;
-                    y = FieldInfo[bz, bx] - brushData[j * DepthTex[depNum].width + k].a * realStrength;
+                    y = FieldInfo[bz, bx] - brushData[j * DepthTex[BrushSize].width + k].a * realStrength;
                     if(y < FieldInfo[bz, bx])
                         FieldInfo[bz, bx] = y;
                 }
@@ -140,7 +145,7 @@ public class PathCreator : MonoBehaviour
         FieldInfo.ApplyPreTerrainHeights();
         /* 경로에 혼선을 주는 시작 점 좌표들 제거 및 새 경로로 정의 */
         newPath.DeleteSegment(0);
-        newPath.DeleteSegment(1);
+        newPath.DeleteSegment(0);
         path = newPath;
         path.AutoSetControlPoints = true;
 
