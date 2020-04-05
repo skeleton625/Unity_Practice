@@ -30,9 +30,9 @@ public class PathEditor : Editor
         {
             Undo.RecordObject(creator, "Create River");
             if (creator.AutoRiver)
-                creator.CreateRandomRiver();
+                creator.CreateRandomRiver(1);
             else
-                creator.CreateRiver();
+                creator.CreateRiver(1);
         }
 
         bool isClosed = GUILayout.Toggle(path.IsClosed, "Path closed");
