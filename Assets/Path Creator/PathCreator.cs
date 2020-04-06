@@ -21,9 +21,7 @@ public class PathCreator : MonoBehaviour
 
     [SerializeField]
     private Texture2D[] DepthTex;
-    // Path를 통한 강 생성 관련 변수들
-    [SerializeField]
-    private TerrainInfo FieldInfo;
+
     [SerializeField]
     private int RandomSize;
     [SerializeField]
@@ -34,20 +32,14 @@ public class PathCreator : MonoBehaviour
     [SerializeField]
     private float strength;
     private float realStrength;
-    // 강 Texture 생성 객체
-    private TexCreator creator;
     // 주류의 비주류 Object
     [SerializeField]
     private GameObject SubRiver;
-
+    // Path를 통한 강 생성 관련 변수들
+    private TerrainInfo FieldInfo;
 
     // Inspector 창에서 스크립트 컴포넌트를 Reset할 경우 실행
     private void Reset() { CreatePath(); }
-
-    private void Start() {
-        creator = GetComponent<TexCreator>();
-        CreatePath();
-    }
 
     // 새 경로 생성 함수
     public void CreatePath()
@@ -60,11 +52,14 @@ public class PathCreator : MonoBehaviour
 
         startPos.x = x;
         startPos.z = z;
+        if (FieldInfo == null)
+            FieldInfo = TerrainInfo.instance;
         path = new Path(FieldInfo.SetRealHeight(startPos));
     }
 
     public void CreateRandomRiver(int BrushSize)
     {
+        CreatePath();
         // 랜덤 경로를 위한 최소, 최대 범위 지정
         float minX = - transform.localScale.x / 2;
         float maxX = transform.localScale.x / 2;
@@ -77,6 +72,7 @@ public class PathCreator : MonoBehaviour
         {
             z = Random.Range(minZ, maxZ);
             Vector3 riverPos = new Vector3(x, 0, z);
+            /* Vector.zero를 기준으로 transfrom.rotation 만큼 회전 */
             riverPos = transform.rotation * riverPos;
 
             riverPos.x = transform.position.x + riverPos.x;
@@ -89,9 +85,19 @@ public class PathCreator : MonoBehaviour
         CreateRiver(BrushSize);
     }
 
-    private void CreateSubRiver()
+    private void CreateSubRiver(Vector3 start, Vector3 next)
     {
+        start.y = 0;
+        GameObject clone = Instantiate(SubRiver, start, Quaternion.identity);
 
+        Vector3 forward = next - start;
+        forward.Normalize();
+        Vector3 left = new Vector3(forward.z, forward.y, -forward.x);
+
+        start += left * 5;
+        clone.transform.rotation = Quaternion.LookRotation(start);
+        clone.transform.Translate(clone.transform.localScale.x/2, 0, clone.transform.localScale.z/2);
+        clone.GetComponent<PathCreator>().CreateRandomRiver(0);
     }
 
     public void CreateRiver(int BrushSize)
@@ -109,6 +115,7 @@ public class PathCreator : MonoBehaviour
         _z = (int)points[0].z;
         newPath.AddSegment(SetHeights(_x, _z));
 
+        int defTime = 30;
         /* 시작, 끝 점을 제외한 나머지 점들에 대해 Terrain 높낮이를 조절 */
         for (int i = 1; i < points.Length - 1; i++)
         {
@@ -117,6 +124,9 @@ public class PathCreator : MonoBehaviour
             newPath.AddSegment(SetHeights(_x + DepthTex[BrushSize].height / 2, _z + DepthTex[BrushSize].width / 2));
             _x += Random.Range(-1, 1);
             _z += Random.Range(-1, 1);
+
+            if (BrushSize != 0 && i % defTime == 0)
+                CreateSubRiver(points[i], points[i + 1]);
 
             /* Brush 이미지 크기에 따라 지형 변환을 진행 */
             float y;
@@ -137,7 +147,7 @@ public class PathCreator : MonoBehaviour
         }
 
         /* 강 끝 점을 경로에 추가 */
-        _x = (int)points[points.Length - 1].x;
+        _x = (int)points[points.Length - 1].x + 10;
         _z = (int)points[points.Length - 1].z;
         newPath.AddSegment(new Vector3(_x, points[points.Length - 2].y, _z));
 
@@ -149,9 +159,7 @@ public class PathCreator : MonoBehaviour
         path = newPath;
         path.AutoSetControlPoints = true;
 
-        /* 새 경로에 대한 Mesh 계산 및 생성 */
-        if(creator != null)
-            creator.UpdateTexture();
+        gameObject.GetComponent<TexCreator>().UpdateTexture();
     }
 
     /* Terrain의 상대적 높낮이(0~1)가 아닌 실제 높낮이를 계산하는 함수 */
