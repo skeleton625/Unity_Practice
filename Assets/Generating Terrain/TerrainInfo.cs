@@ -12,7 +12,7 @@ public class TerrainInfo : MonoBehaviour
     private Terrain FieldTerrain;
     [SerializeField]
     private float heightLimit;
-    
+
     // Terrain의 높낮이 배열
     private float[,] hArray;
     // TerrainInfo 객체를 통해 높낮이 배열에 접근할 수 있음
@@ -37,10 +37,12 @@ public class TerrainInfo : MonoBehaviour
     public int Depth { get => depth; }
     public int Scale { get => scale; }
     public float HeightLimit { get => heightLimit; }
+    public static TerrainInfo instance;
 
     private void Awake()
     {
         hArray = new float[width, height];
+        instance = this;
     }
 
     //  현재 정의된 높낮이 배열로 Terrain의 전체 높낮이를 설정하는 함수
