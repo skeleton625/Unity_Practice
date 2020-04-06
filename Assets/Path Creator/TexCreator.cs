@@ -4,29 +4,28 @@ using UnityEngine;
 
 public class TexCreator : MonoBehaviour
 {
-    private enum PathSpace { xyz, xy, xz };
-
     [SerializeField]
-    private GameObject NewMesh;
+    private GameObject NewRiver;
     [SerializeField]
     private float texWidth;
-    [SerializeField, Range(.05f, 1.5f)]
-    private float spacing;
-    [SerializeField]
     private TerrainInfo FieldInfo;
 
     public void UpdateTexture()
     {
+        FieldInfo = TerrainInfo.instance;
         Path path = GetComponent<PathCreator>().path;
-        //Vector3[] points = path.Points.ToArray();
-        GameObject RiverMesh = Instantiate(NewMesh, Vector3.zero, Quaternion.identity);
-        RiverMesh.transform.position = new Vector3(0, -1.1f, 0);
-        RiverMesh.GetComponent<MeshFilter>().mesh = CreateTexMesh();
+        GameObject River = Instantiate(NewRiver, Vector3.zero, Quaternion.identity);
+        River.transform.position = new Vector3(0, -1f, 0);
+
+        Mesh RiverMesh = CreateTexMesh();
+        River.GetComponent<MeshFilter>().mesh = RiverMesh;
+        River.GetComponent<MeshCollider>().sharedMesh = RiverMesh;
+
+        gameObject.SetActive(false);
     }
 
     private Mesh CreateTexMesh()
     {
-
         Path path = GetComponent<PathCreator>().path;
         Vector3[] verts = new Vector3[path.NumPoints * 2];
         Vector2[] uvs = new Vector2[verts.Length];
@@ -82,7 +81,11 @@ public class TexCreator : MonoBehaviour
     {
         int x = (int)point.x;
         int z = (int)point.z;
-        Vector3 pos = new Vector3(x, FieldInfo.Depth * FieldInfo[z, x], z);
+        float h = FieldInfo.Depth * FieldInfo[z, x];
+
+        if (h <= FieldInfo.HeightLimit)
+            h = point.y;
+        Vector3 pos = new Vector3(x, h, z);
 
         /*
         GameObject g = GameObject.CreatePrimitive(PrimitiveType.Sphere);
