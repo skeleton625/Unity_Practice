@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 6511434389048294549}
   m_LocalRotation: {x: 0, y: 0.42261827, z: 0, w: 0.9063079}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 50, y: 1, z: 20}
+  m_LocalScale: {x: 100, y: 1, z: 20}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -108,9 +108,8 @@ MonoBehaviour:
   DepthTex:
   - {fileID: 2800000, guid: 5c910221334ebd848a8dd855f00f24b0, type: 3}
   - {fileID: 2800000, guid: 1119ac37ff83afc49b7dccbf3ba4c47a, type: 3}
-  FieldInfo: {fileID: 0}
-  RandomSize: 40
-  spacing: 5
+  RandomSize: 10
+  spacing: 4
   resolution: 1
   strength: 150
   SubRiver: {fileID: 0}
@@ -126,7 +125,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc9be9e4e4563484bb9a6b137dd84ce4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NewMesh: {fileID: 5574735345178896076, guid: 86a3c3bfe236764438574507b70d348a, type: 3}
-  texWidth: 10
-  spacing: 1
-  FieldInfo: {fileID: 0}
+  NewRiver: {fileID: 5574735345178896076, guid: 86a3c3bfe236764438574507b70d348a,
+    type: 3}
+  texWidth: 5
