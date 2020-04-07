@@ -102,6 +102,7 @@ public class Path
             AutoSetAllAffectedControlPoints(points.Count - 1);
     }
 
+    // 두 점 사이에 새로운 점을 생성하는 함수
     public void SplitSegment(Vector3 anchorPos, int segmentIndex)
     {
         points.InsertRange(segmentIndex * 3 + 2, new Vector3[] { Vector3.zero, anchorPos, Vector3.zero });
@@ -149,9 +150,7 @@ public class Path
             points[i] = pos;
 
             if (autoSetControlPoints)
-            {
                 AutoSetAllAffectedControlPoints(i);
-            }
             else
             {
                 /* 현재 점이 기준 점인 경우 */
