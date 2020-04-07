@@ -127,4 +127,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   NewRiver: {fileID: 5574735345178896076, guid: 86a3c3bfe236764438574507b70d348a,
     type: 3}
-  texWidth: 5
+  texWidth: 6
