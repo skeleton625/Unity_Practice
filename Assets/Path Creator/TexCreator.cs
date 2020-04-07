@@ -10,29 +10,25 @@ public class TexCreator : MonoBehaviour
     private float texWidth;
     private TerrainInfo FieldInfo;
 
-    public void UpdateTexture()
+    public void UpdateTexture(Path path)
     {
         FieldInfo = TerrainInfo.instance;
-        Path path = GetComponent<PathCreator>().path;
         GameObject River = Instantiate(NewRiver, Vector3.zero, Quaternion.identity);
         River.transform.position = new Vector3(0, -1f, 0);
 
-        Mesh RiverMesh = CreateTexMesh();
+        Mesh RiverMesh = CreateTexMesh(path);
         River.GetComponent<MeshFilter>().mesh = RiverMesh;
         River.GetComponent<MeshCollider>().sharedMesh = RiverMesh;
 
         gameObject.SetActive(false);
     }
 
-    private Mesh CreateTexMesh()
+    private Mesh CreateTexMesh(Path path)
     {
-        Path path = GetComponent<PathCreator>().path;
         Vector3[] verts = new Vector3[path.NumPoints * 2];
         Vector2[] uvs = new Vector2[verts.Length];
-        int numTris = 2 * (path.NumPoints - 1);
-        int[] tris = new int[numTris * 3];
-        int vertIndex = 0;
-        int triIndex = 0;
+        int[] tris = new int[2 * (path.NumPoints - 1) * 3];
+        int vertIndex = 0, triIndex = 0;
 
         for (int i = 0; i < path.NumPoints; i+=3)
         {
@@ -86,12 +82,6 @@ public class TexCreator : MonoBehaviour
         if (h <= FieldInfo.HeightLimit)
             h = point.y;
         Vector3 pos = new Vector3(x, h, z);
-
-        /*
-        GameObject g = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        g.transform.position = pos;
-        g.transform.localScale = new Vector3(2f, 2f, 2f);
-        */
 
         return pos;
     }
