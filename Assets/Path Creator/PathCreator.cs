@@ -23,7 +23,7 @@ public class PathCreator : MonoBehaviour
     private Texture2D[] DepthTex;
 
     [SerializeField]
-    private int IntervalSize;
+    private int IntervalSize = 50;
     [SerializeField]
     private float spacing = .1f;
     [SerializeField]
@@ -159,7 +159,9 @@ public class PathCreator : MonoBehaviour
         {
             for (int i = 6; i < path.NumPoints - 3; i+=3)
                 CreateSubRiver(path[i], path[i + 3], i % 2 == 0 ? true : false);
+            gameObject.GetComponent<TexCreator>().SetCombineAllRiverMesh();
         }
+                
     }
 
     /* Terrain의 상대적 높낮이(0~1)가 아닌 실제 높낮이를 계산하는 함수 */

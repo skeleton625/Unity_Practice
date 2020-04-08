@@ -9,6 +9,12 @@ public class TexCreator : MonoBehaviour
     [SerializeField]
     private float texWidth;
     private TerrainInfo FieldInfo;
+    private GameObject MainRiver;
+
+    private void Awake()
+    {
+        MainRiver = GameObject.Find("River");
+    }
 
     public void UpdateTexture(Path path)
     {
@@ -21,6 +27,7 @@ public class TexCreator : MonoBehaviour
         River.GetComponent<MeshCollider>().sharedMesh = RiverMesh;
 
         gameObject.SetActive(false);
+        River.transform.parent = MainRiver.transform;
     }
 
     private Mesh CreateTexMesh(Path path)
@@ -41,8 +48,8 @@ public class TexCreator : MonoBehaviour
             forward.Normalize();
             Vector3 left = new Vector3(forward.z, forward.y, -forward.x);
 
-            verts[vertIndex] = SetMeshHeights(path[i] - left * texWidth);
-            verts[vertIndex + 1] = SetMeshHeights(path[i] + left * texWidth);
+            verts[vertIndex] = FieldInfo.SetRealHeight(path[i] - left * texWidth);
+            verts[vertIndex + 1] = FieldInfo.SetRealHeight(path[i] + left * texWidth);
 
             float completionPercent = i / (float)(path.NumPoints - 1);
             float v = 1 - Mathf.Abs(2 * completionPercent - 1);
@@ -73,16 +80,21 @@ public class TexCreator : MonoBehaviour
         return mesh;
     }
 
-    private Vector3 SetMeshHeights(Vector3 point)
+    public void SetCombineAllRiverMesh()
     {
-        int x = (int)point.x;
-        int z = (int)point.z;
-        float h = FieldInfo.Depth * FieldInfo[z, x];
+        MeshFilter[] meshes = MainRiver.transform.GetComponentsInChildren<MeshFilter>();
+        CombineInstance[] combine = new CombineInstance[meshes.Length];
 
-        if (h <= FieldInfo.HeightLimit)
-            h = point.y;
-        Vector3 pos = new Vector3(x, h, z);
+        for(int i = 0; i < meshes.Length; i++)
+        {
+            combine[i].mesh = meshes[i].sharedMesh;
+            combine[i].transform = meshes[i].transform.localToWorldMatrix;
+            meshes[i].gameObject.SetActive(false);
+        }
 
-        return pos;
+        MeshFilter RiverMesh = MainRiver.GetComponent<MeshFilter>();
+        RiverMesh.mesh = new Mesh();
+        RiverMesh.mesh.CombineMeshes(combine);
+        MainRiver.SetActive(true);
     }
 }
