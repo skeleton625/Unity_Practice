@@ -56,19 +56,18 @@ public class TerrainInfo : MonoBehaviour
         FieldTerrain.terrainData = data;
     }
 
-    public float SetRealHeight(int x, int z)
-    {
-        if (x < 0 || x >= height || z < 0 || z >= width)
-            return 0;
-        return depth * hArray[z, x];
-    }
-
     public Vector3 SetRealHeight(Vector3 pos)
     {
         if (pos.x < 0 || pos.x >= height || pos.z < 0 || pos.z >= width)
             return pos;
 
-        pos.y = depth * hArray[(int)pos.z, (int)pos.x];
+        int px = (int)pos.x;
+        int pz = (int)pos.z;
+
+        if (heightLimit >= hArray[pz, px])
+            pos.y = depth * heightLimit;
+        else
+            pos.y = depth * hArray[pz, px];
         return pos;
     }
 }
