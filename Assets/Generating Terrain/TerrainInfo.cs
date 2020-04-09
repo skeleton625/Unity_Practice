@@ -12,6 +12,11 @@ public class TerrainInfo : MonoBehaviour
     private Terrain FieldTerrain;
     [SerializeField]
     private float heightLimit;
+    [SerializeField]
+    private Texture2D[] DepthBrush;
+    [SerializeField]
+    private float Strength;
+    private float realStrength;
 
     // Terrain의 높낮이 배열
     private float[,] hArray;
@@ -41,8 +46,9 @@ public class TerrainInfo : MonoBehaviour
 
     private void Awake()
     {
-        hArray = new float[width, height];
         instance = this;
+        hArray = new float[width, height];
+        realStrength = Strength / 1500.0f;
     }
 
     //  현재 정의된 높낮이 배열로 Terrain의 전체 높낮이를 설정하는 함수
@@ -69,5 +75,29 @@ public class TerrainInfo : MonoBehaviour
         else
             pos.y = depth * hArray[pz, px];
         return pos;
+    }
+
+    public Vector3 SetDownTerrain(int px, int pz, int bSize)
+    {
+        int dx = DepthBrush[bSize].height / 2;
+        int dz = DepthBrush[bSize].width / 2;
+
+        int bx, bz;
+        float h;
+
+        Color[] brushData = DepthBrush[bSize].GetPixels();
+        for(int x = 0; x < DepthBrush[bSize].height; x++)
+        {
+            for(int z = 0; z < DepthBrush[bSize].width; z++)
+            {
+                bx = px + x;
+                bz = pz + z;
+                if (bx < 0 || bx >= height || bz < 0 || bz >= width)
+                    continue;
+                hArray[bz, bx] -= brushData[x * DepthBrush[bSize].width + z].a * realStrength;
+            }
+        }
+
+        return SetRealHeight(new Vector3(px + dx, 0, pz + dz));
     }
 }
