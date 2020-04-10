@@ -33,6 +33,10 @@ public class PathCreator : MonoBehaviour
     private float resolution = 1f;
     // Path를 통한 강 생성 관련 변수들
     private TerrainInfo FieldInfo;
+    [SerializeField]
+    private GameObject NewRiver;
+    [SerializeField]
+    private GameObject MainRiver;
 
     // Inspector 창에서 스크립트 컴포넌트를 Reset할 경우 실행
     private void Reset() { CreatePath(); }
@@ -74,15 +78,18 @@ public class PathCreator : MonoBehaviour
 
         /* 강 시작 점을 경로에 추가 */
         newPath.AddSegment(FieldInfo.SetRealHeight(points[0]));
-
         /* 시작, 끝 점을 제외한 나머지 점들에 대해 Terrain 높낮이를 조절 */
         for (int i = 1; i < points.Length - 1; i++)
-            newPath.AddSegment(FieldInfo.SetDownTerrain((int)points[i].x, (int)points[i].z, BrushSize));
+        {
+            int x = (int)points[i].x;
+            int z = (int)points[i].z;
 
+            if (x < 0 || x >= FieldInfo.Height || z < 0 || z >= FieldInfo.Width)
+                continue;
+            newPath.AddSegment(FieldInfo.SetDownTerrain(x, z, BrushSize));
+        }
         /* 강 끝 점을 경로에 추가 */
-        newPath.AddSegment(new Vector3((int)points[points.Length - 1].x + 10, 
-                                            points[points.Length - 2].y,
-                                       (int)points[points.Length - 1].z));
+        newPath.AddSegment(FieldInfo.SetRealHeight(points[points.Length-1]));
 
         /* 현재 정의된 높낮이를 Terrain의 높낮이로 정의 */
         FieldInfo.ApplyPreTerrainHeights();
@@ -93,8 +100,7 @@ public class PathCreator : MonoBehaviour
         path = newPath;
         path.AutoSetControlPoints = true;
 
-        gameObject.GetComponent<TexCreator>().UpdateTexture(newPath);
-        GameObject.Find("Terrain").GetComponent<TerrainGenerator>().GenerateRestrictHeights(10);
+        UpdateTexture(newPath);
     }
 
     /* Terrain의 상대적 높낮이(0~1)가 아닌 실제 높낮이를 계산하는 함수 */
@@ -104,5 +110,87 @@ public class PathCreator : MonoBehaviour
         if (pos.y < y)
             pos.y = y;
         return pos;
+    }
+
+    public void UpdateTexture(Path path)
+    {
+        FieldInfo = TerrainInfo.instance;
+        GameObject River = Instantiate(NewRiver, Vector3.zero, Quaternion.identity);
+        River.transform.position = new Vector3(0, -1f, 0);
+
+        Mesh RiverMesh = CreateTexMesh(path);
+        River.GetComponent<MeshFilter>().mesh = RiverMesh;
+        River.GetComponent<MeshCollider>().sharedMesh = RiverMesh;
+
+        gameObject.SetActive(false);
+        River.transform.parent = MainRiver.transform;
+    }
+
+    private Mesh CreateTexMesh(Path path)
+    {
+        Vector3[] verts = new Vector3[path.NumPoints * 2];
+        Vector2[] uvs = new Vector2[verts.Length];
+        int[] tris = new int[2 * (path.NumPoints - 1) * 3];
+        int vertIndex = 0, triIndex = 0;
+
+        for (int i = 0; i < path.NumPoints; i += 3)
+        {
+            Vector3 forward = Vector3.zero;
+            if (i < path.NumPoints - 1)
+                forward += path[(i + 1) % path.NumPoints] - path[i];
+            if (i > 0)
+                forward += path[i] - path[(i - 1 + path.NumPoints) % path.NumPoints];
+
+            forward.Normalize();
+            Vector3 left = new Vector3(forward.z, forward.y, -forward.x);
+
+            verts[vertIndex] = FieldInfo.SetRealHeight(path[i] - left * 10);
+            verts[vertIndex + 1] = FieldInfo.SetRealHeight(path[i] + left * 10);
+
+            float completionPercent = i / (float)(path.NumPoints - 1);
+            float v = 1 - Mathf.Abs(2 * completionPercent - 1);
+            uvs[vertIndex] = new Vector2(1, v);
+            uvs[vertIndex + 1] = new Vector2(0, v);
+
+            if (i < path.NumPoints - 1)
+            {
+                tris[triIndex] = vertIndex;
+                tris[triIndex + 1] = (vertIndex + 2) % verts.Length;
+                tris[triIndex + 2] = vertIndex + 1;
+
+                tris[triIndex + 3] = vertIndex + 1;
+                tris[triIndex + 4] = (vertIndex + 2) % verts.Length;
+                tris[triIndex + 5] = (vertIndex + 3) % verts.Length;
+            }
+
+            vertIndex += 2;
+            triIndex += 6;
+        }
+
+        Mesh mesh = new Mesh();
+        mesh.vertices = verts;
+        mesh.triangles = tris;
+        mesh.RecalculateBounds();
+        mesh.RecalculateNormals();
+        mesh.uv = uvs;
+        return mesh;
+    }
+
+    public void SetCombineAllRiverMesh()
+    {
+        MeshFilter[] meshes = MainRiver.transform.GetComponentsInChildren<MeshFilter>();
+        CombineInstance[] combine = new CombineInstance[meshes.Length];
+
+        for (int i = 0; i < meshes.Length; i++)
+        {
+            combine[i].mesh = meshes[i].sharedMesh;
+            combine[i].transform = meshes[i].transform.localToWorldMatrix;
+            meshes[i].gameObject.SetActive(false);
+        }
+
+        MeshFilter RiverMesh = MainRiver.GetComponent<MeshFilter>();
+        RiverMesh.mesh = new Mesh();
+        RiverMesh.mesh.CombineMeshes(combine);
+        MainRiver.SetActive(true);
     }
 }
