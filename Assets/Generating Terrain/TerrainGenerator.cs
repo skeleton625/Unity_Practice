@@ -23,7 +23,7 @@ public class TerrainGenerator : MonoBehaviour
     // 전체 Terrain의 형태를 구현하는 함수 
     private void GenerateTerrain()
     {
-        GenerateDefaultHeights(0);
+        GenerateDefaultHeights(Info.Scale);
         if(River != null)
             River.GenerateStraightRiver();
         Info.ApplyPreTerrainHeights();
