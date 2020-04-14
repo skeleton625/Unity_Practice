@@ -23,7 +23,8 @@ public class TerrainGenerator : MonoBehaviour
     // 전체 Terrain의 형태를 구현하는 함수 
     private void GenerateTerrain()
     {
-        GenerateDefaultHeights(Info.Scale);
+        //GenerateDefaultHeights(Info.Scale);
+        GenerateSlopHeights(Info.Scale);
         if(River != null)
             River.GenerateStraightRiver();
         Info.ApplyPreTerrainHeights();
@@ -32,11 +33,10 @@ public class TerrainGenerator : MonoBehaviour
     // 랜덤으로 Terrain의 각 위치를 조정해 Terrain의 형태를 구현하는 함수
     private void GenerateDefaultHeights(float Scale)
     {
-        int _width = Info.Width, _height = Info.Height;
         float _depth, _limit = Info.HeightLimit;
 
-        for(int x = 0; x < _width; x++)
-            for(int z = 0; z < _height; z++)
+        for(int x = 0; x < Info.Height; x++)
+            for(int z = 0; z < Info.Width; z++)
             {
                 /* Terrain 내 모든 부분에 대해 랜덤 높낮이를 정의 */
                 _depth = CalculateRandomHeight(x, z, Scale);
@@ -46,6 +46,23 @@ public class TerrainGenerator : MonoBehaviour
                 else
                     Info[z, x] = _depth;
             }
+    }
+
+    private void GenerateSlopHeights(float Scale)
+    {
+        float hVal = 0.75f, depth;
+        for(int x = 0; x < Info.Height; x++)
+        {
+            for(int z = 0; z < Info.Width; z++)
+            {
+                depth = CalculateRandomHeight(x, z, Scale);
+                if (depth > hVal)
+                    Info[z, x] = depth ;
+                else
+                    Info[z, x] = hVal;
+            }
+            hVal -= 0.0005f;
+        }
     }
 
     public void GenerateRestrictHeights(float Scale)
