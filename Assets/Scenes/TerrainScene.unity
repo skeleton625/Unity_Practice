@@ -775,9 +775,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf4d6e885cd6c7d4c913e1fd0582e425, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Scale: 2
   Info: {fileID: 835114393}
   River: {fileID: 1237969973}
+  OffsetX: 0
+  OffsetZ: 0
 --- !u!114 &835114393
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -790,10 +791,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27700515b2cf531418d87b9e0402f659, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 500
-  height: 500
+  width: 512
+  height: 512
   depth: 40
+  scale: 0
+  FieldTerrain: {fileID: 0}
   heightLimit: 0.5
+  DepthBrush: []
+  Strength: 0
 --- !u!1 &993449812
 GameObject:
   m_ObjectHideFlags: 0
