@@ -50,16 +50,13 @@ public class TerrainGenerator : MonoBehaviour
 
     private void GenerateSlopHeights(float Scale)
     {
-        float hVal = 0.75f, depth;
+        float hVal = 0.5f, depth;
         for(int x = 0; x < Info.Height; x++)
         {
             for(int z = 0; z < Info.Width; z++)
             {
                 depth = CalculateRandomHeight(x, z, Scale);
-                if (depth > hVal)
-                    Info[z, x] = depth ;
-                else
-                    Info[z, x] = hVal;
+                Info[z, x] = depth + hVal;
             }
             hVal -= 0.0005f;
         }
@@ -89,6 +86,6 @@ public class TerrainGenerator : MonoBehaviour
         float _xCoord = _x / Info.Width * Scale + OffsetX;
         float _zCoord = _z / Info.Height * Scale + OffsetZ;
 
-        return Mathf.PerlinNoise(_xCoord, _zCoord);
+        return Mathf.PerlinNoise(_xCoord, _zCoord) - 0.2f;
     }
 }
