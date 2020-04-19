@@ -750,13 +750,20 @@ MonoBehaviour:
   width: 1024
   height: 1024
   depth: 50
-  scale: 2
+  scale: 5
   FieldTerrain: {fileID: 566944489}
   heightLimit: 0
   DepthBrush:
   - {fileID: 2800000, guid: 5c910221334ebd848a8dd855f00f24b0, type: 3}
   - {fileID: 2800000, guid: 1119ac37ff83afc49b7dccbf3ba4c47a, type: 3}
   Strength: 100
+  splatHeights:
+  - textureIndex: 1
+    startingHeight: 0
+  - textureIndex: 2
+    startingHeight: 30
+  - textureIndex: 3
+    startingHeight: 50
 --- !u!114 &566944492
 MonoBehaviour:
   m_ObjectHideFlags: 0
