@@ -4,7 +4,12 @@ using UnityEngine;
 
 public class TerrainInfo : MonoBehaviour
 {
-
+    [System.Serializable]
+    private struct SplatHeights
+    {
+        public int textureIndex;
+        public int startingHeight;
+    }
     // Terrain의 가로, 세로, 깊이, 높낮이 규모 정의
     /* Terrain의 가로, 세로 정의의 경우, 2의 제곱 수로 정의해야 함 */
     [SerializeField]
@@ -18,6 +23,9 @@ public class TerrainInfo : MonoBehaviour
     [SerializeField]
     private float Strength;
     private float realStrength;
+    [SerializeField]
+    private SplatHeights[] splatHeights;
+
 
     // Terrain의 높낮이 배열
     private float[,] hArray;
@@ -60,7 +68,7 @@ public class TerrainInfo : MonoBehaviour
         data.size = new Vector3(width, depth, height);
 
         data.SetHeights(0, 0, hArray);
-        FieldTerrain.terrainData = data;
+        FieldTerrain.terrainData = SetRandomTerrainTextures(data);
     }
 
     public Vector3 SetRealHeight(Vector3 pos)
@@ -100,5 +108,36 @@ public class TerrainInfo : MonoBehaviour
         }
 
         return SetRealHeight(new Vector3(px + dx, 0, pz + dz));
+    }
+
+    public TerrainData SetRandomTerrainTextures(TerrainData terrainData)
+    {
+        float[,,] splatmapData = new float[terrainData.alphamapWidth,
+                                           terrainData.alphamapHeight, 
+                                           terrainData.alphamapLayers];
+
+        for(int z = 0; z < terrainData.alphamapHeight; z++)
+        {
+            for(int x = 0; x < terrainData.alphamapWidth; x++)
+            {
+                float terrainHeight = Depth * hArray[z, x];
+                float[] splat = new float[splatHeights.Length];
+
+                for(int i = 0; i < 2; i++)
+                {
+                    if (terrainHeight >= splatHeights[i].startingHeight && terrainHeight <= splatHeights[i + 1].startingHeight)
+                        splat[splatHeights[i].textureIndex] = 1;
+                }
+
+                if (splat[splatHeights[0].textureIndex] == 0 && splat[splatHeights[1].textureIndex] == 0)
+                    splat[splatHeights[0].textureIndex] = 1;
+
+                for(int i = 0; i < splatHeights.Length; i++)
+                    splatmapData[x, z, i] = splat[i];
+            }
+        }
+
+        terrainData.SetAlphamaps(0, 0, splatmapData);
+        return terrainData;
     }
 }
