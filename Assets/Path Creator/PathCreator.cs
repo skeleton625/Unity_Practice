@@ -84,15 +84,15 @@ public class PathCreator : MonoBehaviour
             int x = (int)points[i].x;
             int z = (int)points[i].z;
 
+            /*
             if (x < 0 || x >= FieldInfo.Height || z < 0 || z >= FieldInfo.Width)
                 continue;
+            */
             newPath.AddSegment(FieldInfo.SetDownTerrain(x, z, BrushSize));
         }
         /* 강 끝 점을 경로에 추가 */
         newPath.AddSegment(FieldInfo.SetRealHeight(points[points.Length-1]));
 
-        /* 현재 정의된 높낮이를 Terrain의 높낮이로 정의 */
-        FieldInfo.ApplyPreTerrainHeights();
         /* 경로에 혼선을 주는 시작 점 좌표들 제거 */
         newPath.DeleteSegment(0);
         newPath.DeleteSegment(0);

@@ -5,6 +5,8 @@ using UnityEngine;
 public class RiverManager : MonoBehaviour
 {
     [SerializeField]
+    private TerrainInfo Info;
+    [SerializeField]
     private GameObject[] RiverPaths;
     [SerializeField]
     private TerrainGenerator generator;
