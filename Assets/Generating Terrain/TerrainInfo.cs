@@ -25,10 +25,15 @@ public class TerrainInfo : MonoBehaviour
     private float realStrength;
     [SerializeField]
     private SplatHeights[] splatHeights;
+    [SerializeField]
+    private GameObject Grass;
 
 
     // Terrain의 높낮이 배열
     private float[,] hArray;
+    private float[,] pArray;
+    // Terrain 텍스처 배열
+    private float[,,] splatmapData;
     // TerrainInfo 객체를 통해 높낮이 배열에 접근할 수 있음
     public float this[int x, int z]
     {
@@ -42,7 +47,7 @@ public class TerrainInfo : MonoBehaviour
         {
             if (x < 0 || z < 0 || x >= height || z >= width)
                 return;
-            hArray[x, z] = value;
+            pArray[x, z] = value;
         }
     }
 
@@ -55,8 +60,13 @@ public class TerrainInfo : MonoBehaviour
 
     private void Awake()
     {
+        TerrainData tData = FieldTerrain.terrainData;
         instance = this;
         hArray = new float[width, height];
+        pArray = new float[width, height];
+        splatmapData = new float[tData.alphamapWidth, 
+                                 tData.alphamapHeight,
+                                 tData.alphamapLayers];
         realStrength = Strength / 1500.0f;
     }
 
@@ -67,8 +77,15 @@ public class TerrainInfo : MonoBehaviour
         data.heightmapResolution = width + 1;
         data.size = new Vector3(width, depth, height);
 
-        data.SetHeights(0, 0, hArray);
-        FieldTerrain.terrainData = SetRandomTerrainTextures(data);
+        data.SetHeights(0, 0, pArray);
+        data.SetAlphamaps(0, 0, splatmapData);
+        FieldTerrain.terrainData = data;
+        
+        for(int x = 0; x < width; x++)
+        {
+            for (int z = 0; z < height; z++)
+                hArray[x, z] = pArray[x, z];
+        }
     }
 
     public Vector3 SetRealHeight(Vector3 pos)
@@ -79,10 +96,7 @@ public class TerrainInfo : MonoBehaviour
         int px = (int)pos.x;
         int pz = (int)pos.z;
 
-        if (heightLimit >= hArray[pz, px])
-            pos.y = depth * heightLimit;
-        else
-            pos.y = depth * hArray[pz, px];
+        pos.y = depth * hArray[pz, px];
         return pos;
     }
 
@@ -92,52 +106,63 @@ public class TerrainInfo : MonoBehaviour
         int dz = DepthBrush[bSize].width / 2;
 
         int bx, bz;
-        float h;
+        float nh;
 
         Color[] brushData = DepthBrush[bSize].GetPixels();
         for(int x = 0; x < DepthBrush[bSize].height; x++)
         {
-            for(int z = 0; z < DepthBrush[bSize].width; z++)
+            for (int z = 0; z < DepthBrush[bSize].width; z++)
             {
                 bx = px + x;
                 bz = pz + z;
                 if (bx < 0 || bx >= height || bz < 0 || bz >= width)
                     continue;
-                hArray[bz, bx] -= brushData[x * DepthBrush[bSize].width + z].a * realStrength;
+                nh = pArray[bz, bx] - brushData[x * DepthBrush[bSize].width + z].a * realStrength;
+                if (nh == pArray[bz, bx])
+                {
+                    splatmapData[bz, bx, 0] = 0.4f;
+                    if (splatmapData[bz, bx, 1] == 1)
+                        splatmapData[bz, bx, 1] = 0.6f;
+                    else
+                        splatmapData[bz, bx, 2] = 0.6f;
+                }
+                else
+                {
+                    splatmapData[bz, bx, 0] = 1;
+                    splatmapData[bz, bx, 1] = 0;
+                    splatmapData[bz, bx, 2] = 0;
+                }
+                pArray[bz, bx] = nh;
             }
         }
-
         return SetRealHeight(new Vector3(px + dx, 0, pz + dz));
     }
 
-    public TerrainData SetRandomTerrainTextures(TerrainData terrainData)
+    public void SetRandomTerrainTextures()
     {
-        float[,,] splatmapData = new float[terrainData.alphamapWidth,
-                                           terrainData.alphamapHeight, 
-                                           terrainData.alphamapLayers];
+        TerrainData terrainData = FieldTerrain.terrainData;
 
-        for(int z = 0; z < terrainData.alphamapHeight; z++)
+        float preHeight;
+        for(int x = 0; x < terrainData.alphamapHeight; x++)
         {
-            for(int x = 0; x < terrainData.alphamapWidth; x++)
+            for (int z = 0; z < terrainData.alphamapWidth; z++)
             {
-                float terrainHeight = Depth * hArray[z, x];
+                preHeight = Depth * pArray[z, x];
                 float[] splat = new float[splatHeights.Length];
 
-                for(int i = 0; i < 2; i++)
+                for(int i = 0; i < splatHeights.Length-1; i++)
                 {
-                    if (terrainHeight >= splatHeights[i].startingHeight && terrainHeight <= splatHeights[i + 1].startingHeight)
+                    if (preHeight >= splatHeights[i].startingHeight && preHeight <= splatHeights[i + 1].startingHeight)
                         splat[splatHeights[i].textureIndex] = 1;
                 }
 
-                if (splat[splatHeights[0].textureIndex] == 0 && splat[splatHeights[1].textureIndex] == 0)
-                    splat[splatHeights[0].textureIndex] = 1;
+                if (splat[0] == 0 && splat[1] == 0 && splat[2] == 0)
+                    splat[splatHeights[1].textureIndex] = 1;
+
 
                 for(int i = 0; i < splatHeights.Length; i++)
-                    splatmapData[x, z, i] = splat[i];
+                    splatmapData[z, x, i] = splat[i];
             }
         }
-
-        terrainData.SetAlphamaps(0, 0, splatmapData);
-        return terrainData;
     }
 }

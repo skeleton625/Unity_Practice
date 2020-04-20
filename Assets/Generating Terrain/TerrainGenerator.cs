@@ -27,6 +27,7 @@ public class TerrainGenerator : MonoBehaviour
         GenerateSlopHeights(Info.Scale);
         if(River != null)
             River.GenerateStraightRiver();
+        Info.SetRandomTerrainTextures();
         Info.ApplyPreTerrainHeights();
     }
 
