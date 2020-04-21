@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class Path
+public class RiverPath
 {
 
     [SerializeField, HideInInspector]
@@ -14,7 +14,7 @@ public class Path
     private bool autoSetControlPoints;
 
     // center 좌표를 기준으로 4개의 점을 정의
-    public Path(Vector3 center)
+    public RiverPath(Vector3 center)
     {
         points = new List<Vector3>
         {

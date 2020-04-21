@@ -7,7 +7,7 @@ using UnityEditor;
 public class PathEditor : Editor
 {
     private PathCreator creator;
-    private Path path
+    private RiverPath path
     { get => creator.path; }
 
     private const float segmentSelectDistanceThreshold = .1f;

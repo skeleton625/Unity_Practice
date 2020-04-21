@@ -19,7 +19,7 @@ public class PathCreator : MonoBehaviour
     [HideInInspector]
     public float controlDiameter = 0.5f;
     [HideInInspector]
-    public Path path;
+    public RiverPath path;
 
     public bool displayControlPoints = true;
     public bool AutoRiver;
@@ -46,7 +46,7 @@ public class PathCreator : MonoBehaviour
     {
         if (FieldInfo == null)
             FieldInfo = TerrainInfo.instance;
-        path = new Path(FieldInfo.SetRealHeight(transform.position));
+        path = new RiverPath(FieldInfo.SetRealHeight(transform.position));
     }
 
     public void CreateRandomRiver(int BrushSize)
@@ -74,7 +74,7 @@ public class PathCreator : MonoBehaviour
         /* 강 생성을 위한 선 위의 점 좌표, 방문 여부 배열 정의 */
         Vector3[] points = path.CalculateEvenlySpacedPoitns(spacing, resolution);
         /* 강 생성 후, 해당 경로에 대한 새 경로 객체 정의 */
-        Path newPath = new Path(points[0]);
+        RiverPath newPath = new RiverPath(points[0]);
 
         /* 강 시작 점을 경로에 추가 */
         newPath.AddSegment(FieldInfo.SetRealHeight(points[0]));
@@ -112,7 +112,7 @@ public class PathCreator : MonoBehaviour
         return pos;
     }
 
-    public void UpdateTexture(Path path)
+    public void UpdateTexture(RiverPath path)
     {
         FieldInfo = TerrainInfo.instance;
         GameObject River = Instantiate(NewRiver, Vector3.zero, Quaternion.identity);
@@ -126,7 +126,7 @@ public class PathCreator : MonoBehaviour
         River.transform.parent = MainRiver.transform;
     }
 
-    private Mesh CreateTexMesh(Path path)
+    private Mesh CreateTexMesh(RiverPath path)
     {
         Vector3[] verts = new Vector3[path.NumPoints * 2];
         Vector2[] uvs = new Vector2[verts.Length];
