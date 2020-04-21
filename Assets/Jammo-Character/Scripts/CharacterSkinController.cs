@@ -7,18 +7,18 @@ public class CharacterSkinController : MonoBehaviour
     Animator animator;
     Renderer[] characterMaterials;
 
+    public GameObject CharacterModel;
     public Texture2D[] albedoList;
     [ColorUsage(true,true)]
     public Color[] eyeColors;
-    public enum EyePosition { normal, happy, angry, dead}
+    public enum EyePosition { normal, happy, angry, scared}
     public EyePosition eyeState;
 
     // Start is called before the first frame update
     void Start()
     {
         animator = GetComponent<Animator>();
-        characterMaterials = GetComponentsInChildren<Renderer>();
-        
+        characterMaterials = CharacterModel.GetComponentsInChildren<Renderer>();
     }
 
     // Update is called once per frame
@@ -45,8 +45,8 @@ public class CharacterSkinController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha4))
         {
             //ChangeMaterialSettings(3);
-            ChangeEyeOffset(EyePosition.dead);
-            ChangeAnimatorIdle("dead");
+            ChangeEyeOffset(EyePosition.scared);
+            ChangeAnimatorIdle("scared");
         }
     }
 
@@ -69,6 +69,7 @@ public class CharacterSkinController : MonoBehaviour
     void ChangeEyeOffset(EyePosition pos)
     {
         Vector2 offset = Vector2.zero;
+        eyeState = pos;
 
         switch (pos)
         {
@@ -81,7 +82,7 @@ public class CharacterSkinController : MonoBehaviour
             case EyePosition.angry:
                 offset = new Vector2(.66f, 0);
                 break;
-            case EyePosition.dead:
+            case EyePosition.scared:
                 offset = new Vector2(.33f, .66f);
                 break;
             default:
@@ -91,7 +92,12 @@ public class CharacterSkinController : MonoBehaviour
         for (int i = 0; i < characterMaterials.Length; i++)
         {
             if (characterMaterials[i].transform.CompareTag("PlayerEyes"))
-                characterMaterials[i].material.SetTextureOffset("_MainTex", offset);
+            {
+                // Standard Pipeline -> _MainTex, URP -> _BaseMap
+                characterMaterials[i].material.SetTextureOffset("_BaseMap", offset);
+                break;
+            }
         }
+                
     }
 }
