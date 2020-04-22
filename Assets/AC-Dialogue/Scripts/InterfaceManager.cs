@@ -21,6 +21,8 @@ public class InterfaceManager : MonoBehaviour
     public VillagerScript currentVillager;
 
     [SerializeField]
+    private MovementInput characterInput;
+    [SerializeField]
     private CanvasGroup canvasGroup;
     [SerializeField]
     private TextMeshProUGUI nameTMP;
@@ -51,7 +53,71 @@ public class InterfaceManager : MonoBehaviour
         animatedText.onDialogueFinish.AddListener(() => FinishDialogue());
     }
 
+    private void ResetState()
+    {
+        currentVillager.Reset();
+        characterInput.enabled = true;
+        inDialogue = false;
+        canExit = false;
+    }
+
     private void FinishDialogue()
     {
+        if(dialogueIndex < currentVillager.dialogue.conversationBlock.Count - 1)
+        {
+            ++dialogueIndex;
+            nextDialogue = true;
+        }
+        else
+        {
+            nextDialogue = false;
+            canExit = true;
+        }
+    }
+
+    // 시민에 따른 대화창 초기화 함수
+    private void SetCharNameAndColor()
+    {
+        nameTMP.text = currentVillager.villager.name;
+        nameTMP.color = currentVillager.villager.villagerNameColor;
+        nameBubble.color = currentVillager.villager.villagerColor;
+    }
+
+    private void DialogueDOF(float x)
+    {
+        dialogueDof.weight = x;
+    }
+
+    // 대화 시, 대화 창을 비워주는 함수
+    public void ClearText()
+    {
+        animatedText.text = string.Empty;
+    }
+
+    public void CameraChange(bool dialogue)
+    {
+        // 대화 실행 여부에 따라 해당 cinemachine 오브젝트를 활성화
+        gameCam.SetActive(!dialogue);
+        dialogueCam.SetActive(dialogue);
+
+        float dofWeight = dialogueCam.activeSelf ? 1 : 0;
+        DOVirtual.Float(dialogueDof.weight, dofWeight, .8f, DialogueDOF);
+    }
+
+    public void FadeUI(bool show, float time, float delay)
+    {
+        Sequence s = DOTween.Sequence();
+        // DOTween에서 delay만큼 기다림
+        s.AppendInterval(delay);
+        // delay 초 뒤, canvasGroup을 DOFade 함
+        s.Append(canvasGroup.DOFade(show ? 1 : 0, time));
+
+        // 시민과 대화가 시작할 경우, 대화 초기화 진행
+        if (show)
+        {
+            dialogueIndex = 0;
+            s.Join(canvasGroup.transform.DOScale(0, time * 2).From().SetEase(Ease.OutBack));
+            s.AppendCallback(() => animatedText.ReadText(currentVillager.dialogue.conversationBlock[0]));
+        }
     }
 }
