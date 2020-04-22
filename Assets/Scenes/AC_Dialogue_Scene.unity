@@ -1651,7 +1651,7 @@ Transform:
   - {fileID: 8231537209077091789}
   - {fileID: 822700191}
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &539745479599259037
 Transform:
@@ -1668,7 +1668,7 @@ Transform:
   - {fileID: 632913499}
   - {fileID: 2072781925}
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &632919408055942950
 Transform:
@@ -5829,6 +5829,7 @@ GameObject:
   - component: {fileID: 3541754000123891600}
   - component: {fileID: 3541754000123891602}
   - component: {fileID: 3541754000123891599}
+  - component: {fileID: 3541754000123891601}
   m_Layer: 0
   m_Name: Jammo_B
   m_TagString: Untagged
@@ -5867,6 +5868,22 @@ MonoBehaviour:
   - rig: {fileID: 2072781926}
     active: 1
   m_Effectors: []
+--- !u!114 &3541754000123891601
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3541754000123891598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a30f8ba3c6adbad48a8b9e54e18b5a2b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  villager: {fileID: 0}
+  diaogue: {fileID: 0}
+  eyesRenderer: {fileID: 0}
+  Particles: []
 --- !u!114 &3541754000123891602
 MonoBehaviour:
   m_ObjectHideFlags: 0
