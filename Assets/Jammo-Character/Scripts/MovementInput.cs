@@ -8,6 +8,7 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class MovementInput : MonoBehaviour {
 
+    public bool active;
     public float Velocity;
     [Space]
 
@@ -45,6 +46,10 @@ public class MovementInput : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+        // 비활성화 상태일 경우, 캐릭터 정지
+        if (!active)
+            return;
+
 		InputMagnitude ();
 
         isGrounded = controller.isGrounded;
