@@ -1,18 +1,38 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.Rendering;
+using Cinemachine;
 
 public class DialogueTrigger : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    private InterfaceManager ui;
+    private VillagerScript currentVillager;
+    private MovementInput movement;
+
+    [SerializeField]
+    private CinemachineTargetGroup targetGroup;
+
+    [Space]
+    [Header("Post Processing"), SerializeField]
+    private Volume dialougeDof;
+
+    private void Start()
+    {
+        ui = InterfaceManager.instance;
+        movement = GetComponent<MovementInput>();
+    }
+
+    private void Update()
     {
         
     }
 
-    // Update is called once per frame
-    void Update()
+    private void ActivateDialogueWithVillager()
     {
-        
+        if(Input.GetKeyDown(KeyCode.F) && !ui.inDialogue && currentVillager != null)
+        {
+            // m_Targets[0] == Player Chracter
+            targetGroup.m_Targets[1].target = currentVillager.transform;
+            movement.enabled = false;
+        }
     }
 }
