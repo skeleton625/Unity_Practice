@@ -138,6 +138,14 @@ public class TerrainInfo : MonoBehaviour
         return SetRealHeight(new Vector3(px + dx, 0, pz + dz));
     }
 
+    private float CalculateRandomHeight(float _x, float _z, float Scale)
+    {
+        float _xCoord = _x / width * Scale;
+        float _zCoord = _z / height * Scale;
+
+        return Mathf.PerlinNoise(_xCoord, _zCoord) - 0.2f;
+    }
+
     public void SetRandomTerrainTextures()
     {
         TerrainData terrainData = FieldTerrain.terrainData;
@@ -147,7 +155,7 @@ public class TerrainInfo : MonoBehaviour
         {
             for (int z = 0; z < terrainData.alphamapWidth; z++)
             {
-                preHeight = Depth * pArray[z, x];
+                preHeight = Depth * CalculateRandomHeight(x, z, scale);
                 float[] splat = new float[splatHeights.Length];
 
                 for(int i = 0; i < splatHeights.Length-1; i++)

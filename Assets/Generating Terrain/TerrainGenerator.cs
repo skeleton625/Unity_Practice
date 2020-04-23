@@ -14,8 +14,8 @@ public class TerrainGenerator : MonoBehaviour
     private void Awake()
     {
         // 기존 PerlinNoize에 변칙성을 추가
-        OffsetX = Random.Range(0, 9999f);
-        OffsetZ = Random.Range(0, 9999f);
+        //OffsetX = Random.Range(0, 9999f);
+        //OffsetZ = Random.Range(0, 9999f);
         // PerlinNoize가 들어간 Terrain 생성
         GenerateTerrain();
     }
