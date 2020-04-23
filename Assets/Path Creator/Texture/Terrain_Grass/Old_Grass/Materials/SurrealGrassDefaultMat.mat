@@ -8,12 +8,12 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: SurrealGrassDefaultMat
-  m_Shader: {fileID: 4800000, guid: a559d5bf1195b0246b54979d262ff848, type: 3}
+  m_Shader: {fileID: 4800000, guid: b27c45e084c46bb4889c5776dcbd71e1, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2450
+  m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
   m_SavedProperties:
@@ -115,9 +115,9 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.168
     - _GlossyReflections: 1
-    - _GrassHeight: 1
+    - _GrassHeight: 0.2
     - _GrassWeight: -0.6
-    - _GrassWidth: 2
+    - _GrassWidth: 0.02
     - _Invert1: 0
     - _Invert2: 0
     - _Invert3: 0

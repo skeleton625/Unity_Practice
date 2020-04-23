@@ -3,11 +3,7 @@ guid: 8ba640f002c76634490059ddd6ab42e9
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences:
-  - m_ViewDataDictionary: {instanceID: 0}
-  - targetObject: {instanceID: 0}
-  - densityMap: {instanceID: 0}
-  - grassMaterial: {instanceID: 0}
+  defaultReferences: []
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
