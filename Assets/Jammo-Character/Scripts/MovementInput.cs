@@ -46,9 +46,6 @@ public class MovementInput : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        // 비활성화 상태일 경우, 캐릭터 정지
-        if (!active)
-            return;
 
 		InputMagnitude ();
 
