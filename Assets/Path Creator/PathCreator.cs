@@ -6,37 +6,19 @@ public class PathCreator : MonoBehaviour
 {
     // Inspector 창을 통해 조절할 수 있는 변수들
     /* Path UI의 색, 크기, 회전 점의 표시여부 */
-    [HideInInspector]
-    public Color anchorCol = Color.red;
-    [HideInInspector]
-    public Color controlCol = Color.white;
-    [HideInInspector]
-    public Color segmentCol = Color.green;
-    [HideInInspector]
-    public Color selectedSegmentCol = Color.yellow;
-    [HideInInspector]
-    public float anchorDiameter = 1f;
-    [HideInInspector]
-    public float controlDiameter = 0.5f;
+    [SerializeField]
+    private RiverData datas;
     [HideInInspector]
     public RiverPath path;
 
     public bool displayControlPoints = true;
     public bool AutoRiver;
     [SerializeField]
-    private int RiverWidth, RiverHeight;
+    private TerrainGenerator generator;
     [SerializeField]
-    private int IntervalSize = 50;
+    public GameObject NewRiver;
     [SerializeField]
-    private float spacing = .1f;
-    [SerializeField]
-    private float resolution = 1f;
-    // Path를 통한 강 생성 관련 변수들
-    private TerrainInfo FieldInfo;
-    [SerializeField]
-    private GameObject NewRiver;
-    [SerializeField]
-    private GameObject MainRiver;
+    public GameObject MainRiver;
 
     // Inspector 창에서 스크립트 컴포넌트를 Reset할 경우 실행
     private void Reset() { CreatePath(); }
@@ -44,54 +26,58 @@ public class PathCreator : MonoBehaviour
     // 새 경로 생성 함수
     public void CreatePath()
     {
-        if (FieldInfo == null)
-            FieldInfo = TerrainInfo.instance;
-        path = new RiverPath(FieldInfo.SetRealHeight(transform.position));
+        path = new RiverPath(generator.SetRealHeight(transform.position));
     }
 
-    public void CreateRandomRiver(int BrushSize)
+    public void CreateRandomRiver(int BrushSize, float WaterLevel)
     {
+        int width = datas.RiverWidth;
+        int height = datas.RiverHeight;
+        int interval = datas.IntervalSize;
         CreatePath();
         // 랜덤 경로 지정
-        for(int x = 0; x <= RiverWidth; x += IntervalSize)
+        for(int x = 0; x <= width; x += interval)
         {
-            Vector3 riverPos = new Vector3(x, 0, Random.Range(-RiverHeight, RiverHeight));
+            Vector3 riverPos = new Vector3(x, 0, Random.Range(-height, height));
             /* Vector.zero를 기준으로 transfrom.rotation 만큼 회전 */
             riverPos = transform.rotation * riverPos;
             /* 회전 후, 점 위치를 원래 위치로 이동 */
             riverPos.x = transform.position.x + riverPos.x;
             riverPos.z = transform.position.z + riverPos.z;
 
-            path.AddSegment(FieldInfo.SetRealHeight(riverPos));
+            path.AddSegment(generator.SetRealHeight(riverPos));
         }
 
         /* Terrain 깍기 시작 */
-        CreateRiver(BrushSize);
+        CreateRiver(BrushSize, WaterLevel);
     }
 
-    public void CreateRiver(int BrushSize)
+    /* 현재 CreateRiver 함수는 CreateRandomRiver 함수에 종속적 (후에 병합 필요) */
+    public void CreateRiver(int BrushSize, float WaterLevel)
     {
         /* 강 생성을 위한 선 위의 점 좌표, 방문 여부 배열 정의 */
-        Vector3[] points = path.CalculateEvenlySpacedPoitns(spacing, resolution);
+        Vector3[] points = path.CalculateEvenlySpacedPoitns(datas.spacing, datas.resolution);
         /* 강 생성 후, 해당 경로에 대한 새 경로 객체 정의 */
         RiverPath newPath = new RiverPath(points[0]);
 
         /* 강 시작 점을 경로에 추가 */
-        newPath.AddSegment(FieldInfo.SetRealHeight(points[0]));
+        Vector3 pos = generator.SetRealHeight(points[0]);
+        pos.y -= WaterLevel;
+        newPath.AddSegment(pos);
         /* 시작, 끝 점을 제외한 나머지 점들에 대해 Terrain 높낮이를 조절 */
         for (int i = 1; i < points.Length - 1; i++)
         {
             int x = (int)points[i].x;
             int z = (int)points[i].z;
 
-            /*
-            if (x < 0 || x >= FieldInfo.Height || z < 0 || z >= FieldInfo.Width)
-                continue;
-            */
-            newPath.AddSegment(FieldInfo.SetDownTerrain(x, z, BrushSize));
+            pos = generator.SetDownTerrain(x, z, BrushSize);
+            pos.y -= WaterLevel;
+            newPath.AddSegment(pos);
         }
         /* 강 끝 점을 경로에 추가 */
-        newPath.AddSegment(FieldInfo.SetRealHeight(points[points.Length-1]));
+        pos = generator.SetRealHeight(points[points.Length - 1]);
+        pos.y -= WaterLevel;
+        newPath.AddSegment(pos);
 
         /* 경로에 혼선을 주는 시작 점 좌표들 제거 */
         newPath.DeleteSegment(0);
@@ -106,7 +92,7 @@ public class PathCreator : MonoBehaviour
     /* Terrain의 상대적 높낮이(0~1)가 아닌 실제 높낮이를 계산하는 함수 */
     public Vector3 SetHeights(float x, float y, float z)
     {
-        Vector3 pos = FieldInfo.SetRealHeight(new Vector3(x, 0, z));
+        Vector3 pos = generator.SetRealHeight(new Vector3(x, 0, z));
         if (pos.y < y)
             pos.y = y;
         return pos;
@@ -114,7 +100,6 @@ public class PathCreator : MonoBehaviour
 
     public void UpdateTexture(RiverPath path)
     {
-        FieldInfo = TerrainInfo.instance;
         GameObject River = Instantiate(NewRiver, Vector3.zero, Quaternion.identity);
         River.transform.position = new Vector3(0, -1f, 0);
 
@@ -144,8 +129,8 @@ public class PathCreator : MonoBehaviour
             forward.Normalize();
             Vector3 left = new Vector3(forward.z, forward.y, -forward.x);
 
-            verts[vertIndex] = FieldInfo.SetRealHeight(path[i] - left * 10);
-            verts[vertIndex + 1] = FieldInfo.SetRealHeight(path[i] + left * 10);
+            verts[vertIndex] = path[i] - left * 10;
+            verts[vertIndex + 1] = path[i] + left * 10;
 
             float completionPercent = i / (float)(path.NumPoints - 1);
             float v = 1 - Mathf.Abs(2 * completionPercent - 1);

@@ -6,6 +6,14 @@ using UnityEditor;
 [CustomEditor(typeof(PathCreator))]
 public class PathEditor : Editor
 {
+    // Path Editor의 UI Object 색
+    private Color anchorCol = Color.red;
+    private Color controlCol = Color.white;
+    private Color segmentCol = Color.green;
+    private Color selectedSegmentCol = Color.yellow;
+    private float anchorDiameter = 1f;
+    private float controlDiameter = 0.5f;
+
     private PathCreator creator;
     private RiverPath path
     { get => creator.path; }
@@ -30,9 +38,9 @@ public class PathEditor : Editor
         {
             Undo.RecordObject(creator, "Create River");
             if (creator.AutoRiver)
-                creator.CreateRandomRiver(1);
+                creator.CreateRandomRiver(1, 0);
             else
-                creator.CreateRiver(1);
+                creator.CreateRiver(1, 0);
         }
 
         bool isClosed = GUILayout.Toggle(path.IsClosed, "Path closed");
@@ -118,7 +126,7 @@ public class PathEditor : Editor
 
             if (guiEvent.type.Equals(EventType.MouseDown) && guiEvent.button.Equals(1))
             {
-                float minDstToAnchor = creator.anchorDiameter *.5f;
+                float minDstToAnchor = anchorDiameter *.5f;
                 int closestAnchorIndex = -1;
 
                 // 마우스 커서 위치와 가까운 점을 찾음
@@ -158,7 +166,7 @@ public class PathEditor : Editor
             }
             // Shift를 눌렀을 경우, 마우스가 가깝게 위치한 선 부분의 색을 변화
             Color segmentColor = (i.Equals(selectedSegmentIndex) && Event.current.shift) ?
-                                        creator.selectedSegmentCol : creator.segmentCol;
+                                        selectedSegmentCol : segmentCol;
             Handles.DrawBezier(points[0], points[3], points[1], points[2], segmentColor, null, 2);
         }
 
@@ -169,8 +177,8 @@ public class PathEditor : Editor
             if(isAnchor || creator.displayControlPoints)
             {
                 // 기준 점은 빨강 색, 그 외의 점은 하양 색
-                Handles.color = isAnchor ? creator.anchorCol : creator.controlCol;
-                float handleSize = isAnchor ? creator.anchorDiameter : creator.controlDiameter;
+                Handles.color = isAnchor ? anchorCol : controlCol;
+                float handleSize = isAnchor ? anchorDiameter : controlDiameter;
 
                 Vector3 newPos = Handles.FreeMoveHandle(path[i], Quaternion.identity, handleSize, Vector3.zero, Handles.SphereHandleCap);
                 // 경로가 변경된 경우, 위치 조정

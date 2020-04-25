@@ -5,8 +5,6 @@ using UnityEngine;
 public class RiverManager : MonoBehaviour
 {
     [SerializeField]
-    private TerrainInfo Info;
-    [SerializeField]
     private GameObject[] RiverPaths;
     [SerializeField]
     private TerrainGenerator generator;
@@ -14,6 +12,8 @@ public class RiverManager : MonoBehaviour
     private int RestrictPos;
     [SerializeField]
     private float ReStrictRot;
+    [SerializeField]
+    private float[] WaterLevels;
 
     // Start is called before the first frame update
     public void GenerateAllRivers()
@@ -28,11 +28,14 @@ public class RiverManager : MonoBehaviour
             else if (pos.z == 0 || pos.z == 1024)
                 pos.x = Random.Range(RestrictPos, 1024 - RestrictPos);
             rot.y += (Random.Range(0, 1) == 0 ? 1 : -1) * ReStrictRot;
-            
+
+            int j = Random.Range(0, WaterLevels.Length);
+            float level = WaterLevels[i];
+            Debug.Log(i + " " + level);
             RiverPaths[i].transform.position = pos;
             RiverPaths[i].transform.rotation = Quaternion.Euler(rot);
-            RiverPaths[i].GetComponent<PathCreator>().CreateRandomRiver(1);
+            RiverPaths[i].GetComponent<PathCreator>().CreateRandomRiver(1, level);
         }
-        generator.GenerateRestrictHeights(10);
+        generator.ApplyPreTerrainHeights();
     }
 }
