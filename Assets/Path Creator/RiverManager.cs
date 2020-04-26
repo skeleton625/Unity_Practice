@@ -7,35 +7,71 @@ public class RiverManager : MonoBehaviour
     [SerializeField]
     private GameObject[] RiverPaths;
     [SerializeField]
+    private float[] WaterLevels;
+    [SerializeField]
     private TerrainGenerator generator;
     [SerializeField]
     private int RestrictPos;
     [SerializeField]
-    private float ReStrictRot;
+    private float minRot, maxRot;
     [SerializeField]
-    private float[] WaterLevels;
+    public GameObject MainRiver;
 
     // Start is called before the first frame update
     public void GenerateAllRivers()
     {
+        int interval = 1024 / RiverPaths.Length;
+        int startPos = 0;
         for (int i = 0; i < RiverPaths.Length; i++)
         {
             Vector3 pos = RiverPaths[i].transform.position;
             Vector3 rot = RiverPaths[i].transform.rotation.eulerAngles;
+            rot.y += (Random.Range(0, 1) == 0 ? -1 : 1) * Random.Range(minRot, maxRot);
 
-            if (pos.x == 0 || pos.x == 1024)
-                pos.z = Random.Range(RestrictPos, 1024 - RestrictPos);
-            else if (pos.z == 0 || pos.z == 1024)
-                pos.x = Random.Range(RestrictPos, 1024 - RestrictPos);
-            rot.y += (Random.Range(0, 1) == 0 ? 1 : -1) * ReStrictRot;
+            pos.z = Random.Range(startPos + RestrictPos, (startPos+interval) - RestrictPos);
 
-            int j = Random.Range(0, WaterLevels.Length);
-            float level = WaterLevels[i];
-            Debug.Log(i + " " + level);
+            int depth = Random.Range(0, generator.DepthCount);
+            float water = WaterLevels[CalculateRiverDepth(depth)];
+            Debug.Log(depth + " " + water);
             RiverPaths[i].transform.position = pos;
             RiverPaths[i].transform.rotation = Quaternion.Euler(rot);
-            RiverPaths[i].GetComponent<PathCreator>().CreateRandomRiver(1, level);
+            RiverPaths[i].GetComponent<PathCreator>().CreateRandomRiver(depth, water);
+            startPos += interval;
         }
         generator.ApplyPreTerrainHeights();
+        SetCombineAllRiverMesh();
+    }
+
+    private int CalculateRiverDepth(int DepthLevel)
+    {
+        switch(DepthLevel)
+        {
+            case 0:
+                return Random.Range(0, WaterLevels.Length - 2);
+            case 1:
+                return Random.Range(0, WaterLevels.Length - 1);
+            case 2:
+                return Random.Range(0, WaterLevels.Length) ;
+            default:
+                return 0;
+        }
+    }
+
+    private void SetCombineAllRiverMesh()
+    {
+        MeshFilter[] meshes = MainRiver.transform.GetComponentsInChildren<MeshFilter>();
+        CombineInstance[] combine = new CombineInstance[meshes.Length];
+
+        for (int i = 0; i < meshes.Length; i++)
+        {
+            combine[i].mesh = meshes[i].sharedMesh;
+            combine[i].transform = meshes[i].transform.localToWorldMatrix;
+            Destroy(meshes[i].gameObject);
+        }
+
+        MeshFilter RiverMesh = MainRiver.GetComponent<MeshFilter>();
+        RiverMesh.mesh = new Mesh();
+        RiverMesh.mesh.CombineMeshes(combine);
+        MainRiver.SetActive(true);
     }
 }
