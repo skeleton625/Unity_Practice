@@ -11,6 +11,8 @@ public class TerrainGenerator : MonoBehaviour
     [SerializeField]
     private float Strength;
     private float realStrength;
+    private int depthCount;
+    public int DepthCount{ get => depthCount; }
 
     // Terrain의 높낮이 배열
     private float[,] hArray;
@@ -20,8 +22,7 @@ public class TerrainGenerator : MonoBehaviour
 
     private void Awake()
     {
-        datas.FieldTerrain = GetComponent<Terrain>();
-        TerrainData tData = datas.FieldTerrain.terrainData;
+        depthCount = DepthBrush.Length;
         realStrength = Strength / 1500.0f;
         // 기존 PerlinNoize에 변칙성을 추가
         OffsetX = Random.Range(0, 9999f);
@@ -29,6 +30,9 @@ public class TerrainGenerator : MonoBehaviour
         // PerlinNoize가 들어간 Terrain 생성
         hArray = new float[datas.Width, datas.Height];
         pArray = new float[datas.Width, datas.Height];
+
+        datas.FieldTerrain = GetComponent<Terrain>();
+        TerrainData tData = datas.FieldTerrain.terrainData;
         SplatmapData = new float[tData.alphamapWidth,
                                  tData.alphamapHeight,
                                  tData.alphamapLayers];
@@ -46,7 +50,7 @@ public class TerrainGenerator : MonoBehaviour
 
     private void GenerateSlopHeights()
     {
-        float hVal = 0.6f, depth;
+        float hVal = 0.5f, depth;
         float limit = datas.HeightLimit;
         int height = datas.Height, width = datas.Width;
 
@@ -54,13 +58,14 @@ public class TerrainGenerator : MonoBehaviour
         {
             for(int z = 0; z < width; z++)
             {
-                depth = CalculateRandomHeight(x, z) + hVal - 0.2f;
+                depth = CalculateRandomHeight(x, z) + hVal;
+                depth = depth > 1 ? 1 : depth;
                 if (depth < limit)
                     pArray[z, x] = limit;
                 else
                     pArray[z, x] = depth;
             }
-            hVal -= 0.0008f;
+            hVal -= 0.0006f;
         }
     }
 
@@ -185,11 +190,13 @@ public class TerrainGenerator : MonoBehaviour
     {
         int px = (int)pos.x;
         int pz = (int)pos.z;
-        if (px < 0 || px >= datas.Height || 
-            pz < 0 || pz >= datas.Width)
-            return pos;
 
-        pos.y = datas.Depth * hArray[pz, px];
+        if (px < 0) px = 0;
+        else if (px >= datas.Height) px = datas.Height - 1;
+        if (pz < 0) pz = 0;
+        else if (pz >= datas.Width) pz = datas.Width - 1;
+
+        pos.y = datas.Depth * hArray[pz, px] - 1f;
         return pos;
     }
 }
