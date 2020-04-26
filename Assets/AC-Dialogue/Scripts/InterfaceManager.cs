@@ -16,10 +16,9 @@ public class InterfaceManager : MonoBehaviour
     [HideInInspector]
     public bool inDialogue;
     [HideInInspector]
-    public TMP_Animated animatedText;
-    [HideInInspector]
     public VillagerScript currentVillager;
 
+    public TMP_Animated animatedText;
     [SerializeField]
     private MovementInput characterInput;
     [SerializeField]
@@ -56,7 +55,7 @@ public class InterfaceManager : MonoBehaviour
     private void ResetState()
     {
         currentVillager.Reset();
-        characterInput.enabled = true;
+        characterInput.active = true;
         inDialogue = false;
         canExit = false;
     }
@@ -89,12 +88,12 @@ public class InterfaceManager : MonoBehaviour
     }
 
     // 대화 시, 대화 창을 비워주는 함수
-    public void ClearText()
+    private void ClearText()
     {
         animatedText.text = string.Empty;
     }
 
-    public void CameraChange(bool dialogue)
+    private void CameraChange(bool dialogue)
     {
         // 대화 실행 여부에 따라 해당 cinemachine 오브젝트를 활성화
         gameCam.SetActive(!dialogue);
@@ -104,7 +103,7 @@ public class InterfaceManager : MonoBehaviour
         DOVirtual.Float(dialogueDof.weight, dofWeight, .8f, DialogueDOF);
     }
 
-    public void FadeUI(bool show, float time, float delay)
+    private void FadeUI(bool show, float time, float delay)
     {
         Sequence s = DOTween.Sequence();
         // DOTween에서 delay만큼 기다림
@@ -119,5 +118,14 @@ public class InterfaceManager : MonoBehaviour
             s.Join(canvasGroup.transform.DOScale(0, time * 2).From().SetEase(Ease.OutBack));
             s.AppendCallback(() => animatedText.ReadText(currentVillager.dialogue.conversationBlock[0]));
         }
+    }
+
+    public void InitiateDialogue()
+    {
+        SetCharNameAndColor();
+        inDialogue = true;
+        CameraChange(true);
+        ClearText();
+        FadeUI(true, .2f, .65f);
     }
 }
