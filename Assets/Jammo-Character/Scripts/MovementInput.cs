@@ -39,13 +39,21 @@ public class MovementInput : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		anim = this.GetComponent<Animator> ();
-		cam = Camera.main;
+        active = true;
+
+        cam = Camera.main;
+        anim = this.GetComponent<Animator> ();
 		controller = this.GetComponent<CharacterController> ();
 	}
 	
 	// Update is called once per frame
 	void Update () {
+
+        if (!active)
+        {
+            anim.SetFloat("Blend", 0, StartAnimTime, Time.deltaTime);
+            return;
+        }
 
 		InputMagnitude ();
 
