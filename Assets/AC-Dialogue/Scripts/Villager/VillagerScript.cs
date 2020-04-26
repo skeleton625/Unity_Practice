@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using DG.Tweening;
@@ -90,6 +89,7 @@ public class VillagerScript : MonoBehaviour
         eyesRenderer.material.SetTextureOffset("_BaseMap", Vector2.zero);
     }
 
+    // 시민 Object의 방향을 playerPos Vector3 방향으로 회전하는 함수
     public void TurnToPlayer(Vector3 playerPos)
     {
         transform.DOLookAt(playerPos, (transform.position - playerPos).sqrMagnitude / 5);
