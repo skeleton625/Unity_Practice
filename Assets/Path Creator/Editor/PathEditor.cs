@@ -40,7 +40,7 @@ public class PathEditor : Editor
             if (creator.AutoRiver)
                 creator.CreateRandomRiver(1, 0);
             else
-                creator.CreateRiver(1, 0);
+                creator.CreateRiver(1);
         }
 
         bool isClosed = GUILayout.Toggle(path.IsClosed, "Path closed");
