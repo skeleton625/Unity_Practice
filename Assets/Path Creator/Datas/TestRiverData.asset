@@ -19,7 +19,7 @@ MonoBehaviour:
   RiverWidth: 1500
   RiverHeight: 200
   IntervalSize: 300
-  spacing: 5
+  spacing: 10
   resolution: 1
   WaterLevel: 0
   DepthLevel: 1
