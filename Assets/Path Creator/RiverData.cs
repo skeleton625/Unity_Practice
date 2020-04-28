@@ -10,8 +10,9 @@ public class RiverData : ScriptableObject
 
     public int RiverWidth, RiverHeight;
     public int IntervalSize;
-    public float spacing = .1f;
-    public float resolution = 1f;
+    public float spacing;
+    public float resolution;
     public float WaterLevel;
+    public float RealStrength;
     public int DepthLevel;
 }
