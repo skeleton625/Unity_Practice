@@ -6,6 +6,7 @@ TagManager:
   tags:
   - PlayerEyes
   - Villager
+  - River
   layers:
   - Default
   - TransparentFX
