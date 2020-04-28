@@ -28,10 +28,13 @@ public class PathCreator : MonoBehaviour
         path = new RiverPath(generator.SetRealHeight(transform.position));
     }
 
-    public void CreateRandomRiver(int DepthLevel, float WaterLevel)
+    public void CreateRandomRiver(int DepthLevel, float WaterLevel, float Space, float Strength)
     {
+        datas.spacing = Space;
         datas.WaterLevel = WaterLevel;
         datas.DepthLevel = DepthLevel;
+        datas.RealStrength = Strength / 1500;
+
         int width = datas.RiverWidth;
         int height = datas.RiverHeight;
         int interval = datas.IntervalSize;
@@ -65,6 +68,7 @@ public class PathCreator : MonoBehaviour
         /* 강 시작 점을 경로에 추가 */
         newPath.AddSegment(generator.SetRealHeight(points[0]));
         /* 시작, 끝 점을 제외한 나머지 점들에 대해 Terrain 높낮이를 조절 */
+
         for (; i < points.Length - 1; i++)
         {
             int x = (int)points[i].x;
@@ -73,19 +77,18 @@ public class PathCreator : MonoBehaviour
             if (x >= 1024)
                 break;
 
-            newPath.AddSegment(generator.SetDownTerrain(x, z, DepthLevel));
+            newPath.AddSegment(generator.SetDownTerrain(x, z, DepthLevel, datas.RealStrength));
         }
         /* 강 끝 점을 경로에 추가 */
-        newPath.AddSegment(generator.SetRealHeight(points[i]));
+        newPath.AutoSetControlPoints = true;
 
         /* 경로에 혼선을 주는 시작 점 좌표들 제거 */
         newPath.DeleteSegment(0);
         newPath.DeleteSegment(0);
         /* 자연스러운 강 곡선 수정 */
         path = newPath;
-        path.AutoSetControlPoints = true;
 
-        UpdateTexture(path);
+        UpdateTexture(newPath);
     }
 
     /* Terrain의 상대적 높낮이(0~1)가 아닌 실제 높낮이를 계산하는 함수 */
@@ -118,6 +121,8 @@ public class PathCreator : MonoBehaviour
         int vertIndex = 0, triIndex = 0;
         int[] riverWidth = new int[3] { 5, 15, 30 };
 
+        Vector3 rayPos;
+        RaycastHit hitInfo;
         for (int i = 0; i < path.NumPoints; i += 3)
         {
             Vector3 forward = Vector3.zero;
@@ -129,8 +134,17 @@ public class PathCreator : MonoBehaviour
             Vector3 left = new Vector3(forward.z, forward.y, -forward.x);
             verts[vertIndex] = generator.SetRealHeight(path[i] - left * riverWidth[datas.DepthLevel]);
             verts[vertIndex + 1] = generator.SetRealHeight(path[i] + left * riverWidth[datas.DepthLevel]);
-            verts[vertIndex].y -= (datas.WaterLevel + 0.1f);
-            verts[vertIndex + 1].y -= (datas.WaterLevel + 0.1f);
+
+            for(int j = 0; j < 2; j++)
+            {
+                verts[vertIndex + j].y -= (datas.WaterLevel + 0.05f);
+                rayPos = verts[vertIndex + j];
+                if (Physics.Raycast(rayPos, -Vector3.up, out hitInfo, 1000f))
+                {
+                    if (hitInfo.transform.CompareTag("River"))
+                        verts[vertIndex + j].y = hitInfo.point.y;
+                }
+            }
 
             float completionPercent = i / (float)(path.NumPoints - 1);
             float v = 1 - Mathf.Abs(2 * completionPercent - 1);
