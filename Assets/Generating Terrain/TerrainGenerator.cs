@@ -8,22 +8,22 @@ public class TerrainGenerator : MonoBehaviour
     private float OffsetX, OffsetZ;
     [SerializeField]
     private Texture2D[] DepthBrush;
-    [SerializeField]
-    private float Strength;
-    private float realStrength;
     private int depthCount;
-    public int DepthCount{ get => depthCount; }
+    public int DepthCount { get => depthCount; }
 
     // Terrain의 높낮이 배열
     private float[,] hArray;
+    public float[,] HArray
+    { get => hArray; }
     private float[,] pArray;
+    public float[,] PArray
+    { get => pArray; }
     // Terrain 텍스처 배열
     private float[,,] SplatmapData;
 
     private void Awake()
     {
         depthCount = DepthBrush.Length;
-        realStrength = Strength / 1500.0f;
         // 기존 PerlinNoize에 변칙성을 추가
         OffsetX = Random.Range(0, 9999f);
         OffsetZ = Random.Range(0, 9999f);
@@ -65,7 +65,7 @@ public class TerrainGenerator : MonoBehaviour
                 else
                     pArray[z, x] = depth;
             }
-            hVal -= 0.0006f;
+            hVal -= 0.0003f;
         }
     }
 
@@ -126,7 +126,7 @@ public class TerrainGenerator : MonoBehaviour
         ApplyPreTerrainHeights();
     }
 
-    public Vector3 SetDownTerrain(int px, int pz, int bSize)
+    public Vector3 SetDownTerrain(int px, int pz, int bSize, float strength)
     {
         int dx = DepthBrush[bSize].height / 2;
         int dz = DepthBrush[bSize].width / 2;
@@ -144,14 +144,14 @@ public class TerrainGenerator : MonoBehaviour
                 if (bx < 0 || bx >= datas.Height || bz < 0 || bz >= datas.Width)
                     continue;
 
-                nh = pArray[bz, bx] - brushData[x * DepthBrush[bSize].width + z].a * realStrength;
-                if (nh == hArray[bz, bx])
+                pArray[bz, bx] -= brushData[x * DepthBrush[bSize].width + z].a * strength;
+                if (hArray[bz, bx] - pArray[bz, bx] < 0.005)
                 {
-                    SplatmapData[bz, bx, 0] = 0.4f;
+                    SplatmapData[bz, bx, 0] = 0.2f;
                     if (SplatmapData[bz, bx, 1] == 1)
-                        SplatmapData[bz, bx, 1] = 0.6f;
+                        SplatmapData[bz, bx, 1] = 0.8f;
                     else
-                        SplatmapData[bz, bx, 2] = 0.6f;
+                        SplatmapData[bz, bx, 2] = 0.8f;
                 }
                 else
                 {
@@ -159,7 +159,6 @@ public class TerrainGenerator : MonoBehaviour
                     SplatmapData[bz, bx, 1] = 0;
                     SplatmapData[bz, bx, 2] = 0;
                 }
-                pArray[bz, bx] = nh;
             }
         }
         return SetRealHeight(new Vector3(px + dx, 0, pz + dz));
