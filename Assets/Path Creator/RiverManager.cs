@@ -7,7 +7,7 @@ public class RiverManager : MonoBehaviour
     [SerializeField]
     private GameObject[] RiverPaths;
     [SerializeField]
-    private float[] WaterLevels;
+    private float[] WaterLevels, Spaces, Strengths;
     [SerializeField]
     private TerrainGenerator generator;
     [SerializeField]
@@ -16,6 +16,9 @@ public class RiverManager : MonoBehaviour
     private float minRot, maxRot;
     [SerializeField]
     public GameObject MainRiver;
+    [SerializeField]
+    private Camera mainCamera;
+    private RaycastHit info;
 
     // Start is called before the first frame update
     public void GenerateAllRivers()
@@ -26,7 +29,7 @@ public class RiverManager : MonoBehaviour
         {
             Vector3 pos = RiverPaths[i].transform.position;
             Vector3 rot = RiverPaths[i].transform.rotation.eulerAngles;
-            rot.y += (Random.Range(0, 1) == 0 ? -1 : 1) * Random.Range(minRot, maxRot);
+            rot.y += (Random.Range(0, 2) == 0 ? -1 : 1) * Random.Range(minRot, maxRot);
 
             pos.z = Random.Range(startPos + RestrictPos, (startPos+interval) - RestrictPos);
 
@@ -35,7 +38,7 @@ public class RiverManager : MonoBehaviour
             Debug.Log(depth + " " + water);
             RiverPaths[i].transform.position = pos;
             RiverPaths[i].transform.rotation = Quaternion.Euler(rot);
-            RiverPaths[i].GetComponent<PathCreator>().CreateRandomRiver(depth, water);
+            RiverPaths[i].GetComponent<PathCreator>().CreateRandomRiver(depth, water, Spaces[depth], Strengths[depth]);
             startPos += interval;
         }
         generator.ApplyPreTerrainHeights();
@@ -66,7 +69,7 @@ public class RiverManager : MonoBehaviour
         {
             combine[i].mesh = meshes[i].sharedMesh;
             combine[i].transform = meshes[i].transform.localToWorldMatrix;
-            Destroy(meshes[i].gameObject);
+            //Destroy(meshes[i].gameObject);
         }
 
         MeshFilter RiverMesh = MainRiver.GetComponent<MeshFilter>();
