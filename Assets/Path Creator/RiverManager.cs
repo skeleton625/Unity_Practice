@@ -69,7 +69,7 @@ public class RiverManager : MonoBehaviour
         {
             combine[i].mesh = meshes[i].sharedMesh;
             combine[i].transform = meshes[i].transform.localToWorldMatrix;
-            //Destroy(meshes[i].gameObject);
+            meshes[i].gameObject.SetActive(false);
         }
 
         MeshFilter RiverMesh = MainRiver.GetComponent<MeshFilter>();
