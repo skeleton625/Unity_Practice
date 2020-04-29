@@ -121,8 +121,6 @@ public class PathCreator : MonoBehaviour
         int vertIndex = 0, triIndex = 0;
         int[] riverWidth = new int[3] { 5, 15, 30 };
 
-        Vector3 rayPos;
-        RaycastHit hitInfo;
         for (int i = 0; i < path.NumPoints; i += 3)
         {
             Vector3 forward = Vector3.zero;
@@ -136,15 +134,7 @@ public class PathCreator : MonoBehaviour
             verts[vertIndex + 1] = generator.SetRealHeight(path[i] + left * riverWidth[datas.DepthLevel]);
 
             for(int j = 0; j < 2; j++)
-            {
                 verts[vertIndex + j].y -= (datas.WaterLevel + 0.05f);
-                rayPos = verts[vertIndex + j];
-                if (Physics.Raycast(rayPos, -Vector3.up, out hitInfo, 1000f))
-                {
-                    if (hitInfo.transform.CompareTag("River"))
-                        verts[vertIndex + j].y = hitInfo.point.y;
-                }
-            }
 
             float completionPercent = i / (float)(path.NumPoints - 1);
             float v = 1 - Mathf.Abs(2 * completionPercent - 1);
