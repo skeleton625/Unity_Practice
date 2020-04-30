@@ -13,7 +13,7 @@ public class PathCreator : MonoBehaviour
 
     public bool displayControlPoints = true;
     public bool AutoRiver;
-    [SerializeField]
+
     private TerrainGenerator generator;
     [SerializeField]
     public GameObject NewRiver;
@@ -28,12 +28,13 @@ public class PathCreator : MonoBehaviour
         path = new RiverPath(generator.SetRealHeight(transform.position));
     }
 
-    public void CreateRandomRiver(int DepthLevel, float WaterLevel, float Space, float Strength)
+    public void CreateRandomRiver(int DepthLevel, float WaterLevel, float Space, float Strength, TerrainGenerator Generator)
     {
         datas.spacing = Space;
         datas.WaterLevel = WaterLevel;
         datas.DepthLevel = DepthLevel;
         datas.RealStrength = Strength / 1500;
+        generator = Generator;
 
         int width = datas.RiverWidth;
         int height = datas.RiverHeight;
@@ -74,7 +75,7 @@ public class PathCreator : MonoBehaviour
             int x = (int)points[i].x;
             int z = (int)points[i].z;
 
-            if (x >= 1024)
+            if ((x - transform.position.x) >= 1024)
                 break;
 
             newPath.AddSegment(generator.SetDownTerrain(x, z, DepthLevel, datas.RealStrength));

@@ -13,6 +13,5 @@ public class FieldMapData : ScriptableObject
     /* Terrain의 가로, 세로 정의의 경우, 2의 제곱 수로 정의해야 함 */
     public int Width, Height, Depth, Scale;
     public float HeightLimit;
-    public Terrain FieldTerrain;
     public SplatHeights[] TexBound;
 }

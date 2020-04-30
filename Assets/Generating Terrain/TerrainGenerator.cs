@@ -11,13 +11,10 @@ public class TerrainGenerator : MonoBehaviour
     private int depthCount;
     public int DepthCount { get => depthCount; }
 
+    private Terrain FieldTerrain;
     // Terrain의 높낮이 배열
     private float[,] hArray;
-    public float[,] HArray
-    { get => hArray; }
     private float[,] pArray;
-    public float[,] PArray
-    { get => pArray; }
     // Terrain 텍스처 배열
     private float[,,] SplatmapData;
 
@@ -31,8 +28,8 @@ public class TerrainGenerator : MonoBehaviour
         hArray = new float[datas.Width, datas.Height];
         pArray = new float[datas.Width, datas.Height];
 
-        datas.FieldTerrain = GetComponent<Terrain>();
-        TerrainData tData = datas.FieldTerrain.terrainData;
+        FieldTerrain = GetComponent<Terrain>();
+        TerrainData tData = FieldTerrain.terrainData;
         SplatmapData = new float[tData.alphamapWidth,
                                  tData.alphamapHeight,
                                  tData.alphamapLayers];
@@ -71,7 +68,7 @@ public class TerrainGenerator : MonoBehaviour
 
     private void SetRandomTerrainTextures()
     {
-        TerrainData terrainData = datas.FieldTerrain.terrainData;
+        TerrainData terrainData = FieldTerrain.terrainData;
 
         float preHeight;
         int TBlen = datas.TexBound.Length;
@@ -139,8 +136,8 @@ public class TerrainGenerator : MonoBehaviour
         {
             for (int z = 0; z < DepthBrush[bSize].width; z++)
             {
-                bx = px + x;
-                bz = pz + z;
+                bx = px + x - (int)transform.position.x;
+                bz = pz + z - (int)transform.position.z;
                 if (bx < 0 || bx >= datas.Height || bz < 0 || bz >= datas.Width)
                     continue;
 
@@ -167,8 +164,7 @@ public class TerrainGenerator : MonoBehaviour
     //  현재 정의된 높낮이 배열로 Terrain의 전체 높낮이를 설정하는 함수
     public void ApplyPreTerrainHeights()
     {
-        Terrain terrain = datas.FieldTerrain;
-        TerrainData data = terrain.terrainData;
+        TerrainData data = FieldTerrain.terrainData;
         int width = datas.Width, height = datas.Height;
 
         data.heightmapResolution = width + 1;
@@ -176,7 +172,7 @@ public class TerrainGenerator : MonoBehaviour
 
         data.SetHeights(0, 0, pArray);
         data.SetAlphamaps(0, 0, SplatmapData);
-        terrain.terrainData = data;
+        FieldTerrain.terrainData = data;
 
         for (int x = 0; x < width; x++)
         {
@@ -187,8 +183,8 @@ public class TerrainGenerator : MonoBehaviour
 
     public Vector3 SetRealHeight(Vector3 pos)
     {
-        int px = (int)pos.x;
-        int pz = (int)pos.z;
+        int px = (int)(pos.x - transform.position.x);
+        int pz = (int)(pos.z - transform.position.z);
 
         if (px < 0) px = 0;
         else if (px >= datas.Height) px = datas.Height - 1;
