@@ -42,7 +42,7 @@ public class TerrainGenerator : MonoBehaviour
         GenerateSlopHeights();
 
         SetRandomTerrainTextures();
-        ApplyPreTerrainHeights();
+        ApplyPreTerrainHeights(true);
     }
 
     private void GenerateSlopHeights()
@@ -58,9 +58,9 @@ public class TerrainGenerator : MonoBehaviour
                 depth = CalculateRandomHeight(x, z) + hVal;
                 depth = depth > 1 ? 1 : depth;
                 if (depth < limit)
-                    pArray[z, x] = limit;
+                    hArray[z, x] = limit;
                 else
-                    pArray[z, x] = depth;
+                    hArray[z, x] = depth;
             }
             hVal -= 0.0003f;
         }
@@ -120,7 +120,7 @@ public class TerrainGenerator : MonoBehaviour
                     pArray[z, x] = depth < limit ? limit : depth;
             }
 
-        ApplyPreTerrainHeights();
+        ApplyPreTerrainHeights(true);
     }
 
     public Vector3 SetDownTerrain(int px, int pz, int bSize, float strength)
@@ -162,7 +162,7 @@ public class TerrainGenerator : MonoBehaviour
     }
 
     //  현재 정의된 높낮이 배열로 Terrain의 전체 높낮이를 설정하는 함수
-    public void ApplyPreTerrainHeights()
+    public void ApplyPreTerrainHeights(bool isField)
     {
         TerrainData data = FieldTerrain.terrainData;
         int width = datas.Width, height = datas.Height;
@@ -170,15 +170,21 @@ public class TerrainGenerator : MonoBehaviour
         data.heightmapResolution = width + 1;
         data.size = new Vector3(width, datas.Depth, height);
 
-        data.SetHeights(0, 0, pArray);
+        if (isField)
+        {
+            data.SetHeights(0, 0, hArray);
+            for (int x = 0; x < width; x++)
+            {
+                for (int z = 0; z < height; z++)
+                    pArray[x, z] = hArray[x, z];
+            }
+        }
+        else
+            data.SetHeights(0, 0, pArray);
         data.SetAlphamaps(0, 0, SplatmapData);
         FieldTerrain.terrainData = data;
 
-        for (int x = 0; x < width; x++)
-        {
-            for (int z = 0; z < height; z++)
-                hArray[x, z] = pArray[x, z];
-        }
+
     }
 
     public Vector3 SetRealHeight(Vector3 pos)
