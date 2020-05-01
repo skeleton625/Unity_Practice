@@ -7,7 +7,7 @@ public class RiverManager : MonoBehaviour
     [SerializeField]
     private GameObject[] RiverPaths;
     [SerializeField]
-    private float[] WaterLevels, Spaces, Strengths;
+    private float[] Spaces, StrengthLevel;
     [SerializeField]
     private TerrainGenerator generator;
     [SerializeField]
@@ -17,7 +17,6 @@ public class RiverManager : MonoBehaviour
     [SerializeField]
     public GameObject MainRiver;
     private static int num;
-
 
     private void Start()
     {
@@ -37,32 +36,19 @@ public class RiverManager : MonoBehaviour
 
             pos.z = Random.Range(startPos + RestrictPos, (startPos+interval) - RestrictPos);
             int depth = Random.Range(0, generator.DepthCount);
+            int strength = Random.Range(0, StrengthLevel.Length);
             RiverPaths[i].transform.position = pos;
             RiverPaths[i].transform.rotation = Quaternion.Euler(rot);
-            RiverPaths[i].GetComponent<PathCreator>().CreateRandomRiver(depth, 
-                                                                        WaterLevels[CalculateRiverDepth(depth)], 
-                                                                        Spaces[depth], 
-                                                                        Strengths[depth], 
-                                                                        generator);
+            RiverPaths[i].GetComponent<PathCreator>().
+                                    CreateRandomRiver(depth, 0, 
+                                                      Spaces[depth], 
+                                                      StrengthLevel[strength] / 1500, 
+                                                      generator);
             startPos += interval;
         }
-        generator.ApplyPreTerrainHeights();
+        generator.ApplyPreTerrainHeights(false);
         SetCombineAllRiverMesh();
-    }
-
-    private int CalculateRiverDepth(int DepthLevel)
-    {
-        switch(DepthLevel)
-        {
-            case 0:
-                return Random.Range(0, WaterLevels.Length - 2);
-            case 1:
-                return Random.Range(0, WaterLevels.Length - 1);
-            case 2:
-                return Random.Range(0, WaterLevels.Length) ;
-            default:
-                return 0;
-        }
+        gameObject.SetActive(false);
     }
 
     private void SetCombineAllRiverMesh()
