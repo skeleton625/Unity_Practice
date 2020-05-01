@@ -8,16 +8,14 @@ public class PathCreator : MonoBehaviour
     /* Path UI의 색, 크기, 회전 점의 표시여부 */
     [SerializeField]
     private RiverData datas;
+    [SerializeField]
+    public GameObject NewRiver, SubRiver;
     [HideInInspector]
     public RiverPath path;
-
     public bool displayControlPoints = true;
     public bool AutoRiver;
 
     private TerrainGenerator generator;
-    [SerializeField]
-    public GameObject NewRiver;
-
 
     // Inspector 창에서 스크립트 컴포넌트를 Reset할 경우 실행
     private void Reset() { CreatePath(); }
@@ -33,7 +31,7 @@ public class PathCreator : MonoBehaviour
         datas.spacing = Space;
         datas.WaterLevel = WaterLevel;
         datas.DepthLevel = DepthLevel;
-        datas.RealStrength = Strength / 1500;
+        datas.RealStrength = Strength;
         generator = Generator;
 
         int width = datas.RiverWidth;
@@ -75,21 +73,22 @@ public class PathCreator : MonoBehaviour
             int x = (int)points[i].x;
             int z = (int)points[i].z;
 
-            if ((x - transform.position.x) >= 1024)
+            if ((x - transform.position.x) >= 1024 || (z - transform.position.z) >= 1024)
                 break;
 
-            newPath.AddSegment(generator.SetDownTerrain(x, z, DepthLevel, datas.RealStrength));
+            Vector3 pos = generator.SetDownTerrain(x, z, DepthLevel, datas.RealStrength);
+            /* mesh 간격을 위해 짝수 좌표에 대해서만 경로에 입력 */
+            if (i % 2 == 0)
+                newPath.AddSegment(pos);
         }
-        /* 강 끝 점을 경로에 추가 */
-        newPath.AutoSetControlPoints = true;
-
         /* 경로에 혼선을 주는 시작 점 좌표들 제거 */
         newPath.DeleteSegment(0);
         newPath.DeleteSegment(0);
-        /* 자연스러운 강 곡선 수정 */
+        /* 자연스러운 강 곡선으로 수정 */
+        newPath.AutoSetControlPoints = true;
         path = newPath;
 
-        UpdateTexture(newPath);
+        UpdateTexture();
     }
 
     /* Terrain의 상대적 높낮이(0~1)가 아닌 실제 높낮이를 계산하는 함수 */
@@ -101,12 +100,12 @@ public class PathCreator : MonoBehaviour
         return pos;
     }
 
-    private void UpdateTexture(RiverPath path)
+    private void UpdateTexture()
     {
         GameObject River = Instantiate(NewRiver, Vector3.zero, Quaternion.identity);
         River.transform.position = new Vector3(0, -1f, 0);
 
-        Mesh RiverMesh = CreateTexMesh(path);
+        Mesh RiverMesh = CreateTexMesh();
         River.GetComponent<MeshFilter>().mesh = RiverMesh;
         River.GetComponent<MeshCollider>().sharedMesh = RiverMesh;
 
@@ -114,13 +113,13 @@ public class PathCreator : MonoBehaviour
         River.transform.parent = GameObject.Find("MainRiver").transform;
     }
 
-    private Mesh CreateTexMesh(RiverPath path)
+    private Mesh CreateTexMesh()
     {
-        Vector3[] verts = new Vector3[path.NumPoints * 2];
+        Vector3[] verts = new Vector3[path.NumPoints * 3];
         Vector2[] uvs = new Vector2[verts.Length];
-        int[] tris = new int[2 * (path.NumPoints - 1) * 3];
+        int[] tris = new int[4 * (path.NumPoints - 1) * 3];
+        int[] riverWidth = new int[3] { 5, 10, 18 };
         int vertIndex = 0, triIndex = 0;
-        int[] riverWidth = new int[3] { 5, 15, 30 };
 
         for (int i = 0; i < path.NumPoints; i += 3)
         {
@@ -130,31 +129,49 @@ public class PathCreator : MonoBehaviour
             if (i > 0)
                 forward += path[i] - path[(i - 1 + path.NumPoints) % path.NumPoints];
             forward.Normalize();
+
+            // calculate mesh vertex left, right position code
             Vector3 left = new Vector3(forward.z, forward.y, -forward.x);
             verts[vertIndex] = generator.SetRealHeight(path[i] - left * riverWidth[datas.DepthLevel]);
-            verts[vertIndex + 1] = generator.SetRealHeight(path[i] + left * riverWidth[datas.DepthLevel]);
+            verts[vertIndex + 1] = path[i];
+            verts[vertIndex + 2] = generator.SetRealHeight(path[i] + left * riverWidth[datas.DepthLevel]);
 
-            for(int j = 0; j < 2; j++)
-                verts[vertIndex + j].y -= (datas.WaterLevel + 0.05f);
-
-            float completionPercent = i / (float)(path.NumPoints - 1);
-            float v = 1 - Mathf.Abs(2 * completionPercent - 1);
-            uvs[vertIndex] = new Vector2(1, v);
-            uvs[vertIndex + 1] = new Vector2(0, v);
-
-            if (i < path.NumPoints - 1)
+            if(i % 90 == 0 && SubRiver != null)
             {
-                tris[triIndex] = vertIndex;
-                tris[triIndex + 1] = (vertIndex + 2) % verts.Length;
-                tris[triIndex + 2] = vertIndex + 1;
-
-                tris[triIndex + 3] = vertIndex + 1;
-                tris[triIndex + 4] = (vertIndex + 2) % verts.Length;
-                tris[triIndex + 5] = (vertIndex + 3) % verts.Length;
+                GameObject clone = Instantiate(SubRiver, path[i], Quaternion.identity);
+                clone.transform.LookAt(verts[vertIndex]);
+                clone.transform.Rotate(0, -90, 0);
+                clone.GetComponent<PathCreator>().CreateRandomRiver(datas.DepthLevel - 1, 0, datas.spacing, datas.RealStrength, generator);
+                clone.SetActive(false);
             }
 
-            vertIndex += 2;
-            triIndex += 6;
+            for(int j = 0; j < 3; j++)
+                verts[vertIndex + j].y -= (datas.WaterLevel + 0.02f);
+
+            // i / path.NumPoints -> river completionPercent
+            float v = 1 - i / (float)(path.NumPoints - 1); 
+            // uv : Texture move value
+            uvs[vertIndex] = new Vector2(1, v);
+            uvs[vertIndex + 1] = new Vector2(.5f, v);
+            uvs[vertIndex + 2] = new Vector2(0, v);
+
+            // mesh Generate Code
+            if(i < path.NumPoints - 1)
+            {
+                for (int j = 0; j < 12; j += 6)
+                {
+                    tris[triIndex + j] = vertIndex;
+                    tris[triIndex + 1 + j] = (vertIndex + 3) % verts.Length;
+                    tris[triIndex + 2 + j] = vertIndex + 1;
+
+                    tris[triIndex + 3 + j] = vertIndex + 1;
+                    tris[triIndex + 4 + j] = (vertIndex + 3) % verts.Length;
+                    tris[triIndex + 5 + j] = (vertIndex + 4) % verts.Length;
+                    ++vertIndex;
+                }
+            }
+            vertIndex += 1;
+            triIndex += 12;
         }
 
         Mesh mesh = new Mesh();
