@@ -168,10 +168,6 @@ MonoBehaviour:
   - {fileID: 1793293550}
   - {fileID: 1250315852}
   - {fileID: 520143916}
-  Spaces:
-  - 2.5
-  - 5
-  - 10
   StrengthLevel: []
   generator: {fileID: 1006813456}
   RestrictPos: 200
@@ -2132,6 +2128,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 11400000, guid: 8e020768f9d4e7c4d9cbb29979de9281,
         type: 2}
+    - target: {fileID: 7301727831269664416, guid: 5a6ed8fbfda120244b3fd136c1469088,
+        type: 3}
+      propertyPath: SubRiver
+      value: 
+      objectReference: {fileID: 4310587192104630712, guid: b9068981a39e6f943bda855474f43aec,
+        type: 3}
     - target: {fileID: 7301727831269664419, guid: 5a6ed8fbfda120244b3fd136c1469088,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -2619,10 +2621,6 @@ MonoBehaviour:
   - {fileID: 1360063107}
   - {fileID: 1640055939}
   - {fileID: 956169157}
-  Spaces:
-  - 2.5
-  - 5
-  - 10
   StrengthLevel: []
   generator: {fileID: 1824158679}
   RestrictPos: 200
@@ -3774,10 +3772,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   RiverPaths:
   - {fileID: 347644360}
-  Spaces:
-  - 2.5
-  - 5
-  - 10
   StrengthLevel:
   - 50
   - 75
@@ -4277,10 +4271,6 @@ MonoBehaviour:
   - {fileID: 1350275564}
   - {fileID: 549754833}
   - {fileID: 25717134}
-  Spaces:
-  - 2.5
-  - 5
-  - 10
   StrengthLevel: []
   generator: {fileID: 980343111}
   RestrictPos: 200
@@ -5054,10 +5044,6 @@ MonoBehaviour:
   - {fileID: 1306103901}
   - {fileID: 679706203}
   - {fileID: 1049931730}
-  Spaces:
-  - 2.5
-  - 5
-  - 10
   StrengthLevel: []
   generator: {fileID: 1230105635}
   RestrictPos: 200
@@ -5411,10 +5397,6 @@ MonoBehaviour:
   - {fileID: 446554509}
   - {fileID: 1881864004}
   - {fileID: 1014073421}
-  Spaces:
-  - 2.5
-  - 5
-  - 10
   StrengthLevel: []
   generator: {fileID: 136917622}
   RestrictPos: 200
@@ -5547,7 +5529,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 513
   m_VolumeTrigger: {fileID: 0}
-  m_RenderPostProcessing: 1
+  m_RenderPostProcessing: 0
   m_Antialiasing: 1
   m_AntialiasingQuality: 2
   m_StopNaN: 0
@@ -7098,10 +7080,6 @@ MonoBehaviour:
   - {fileID: 567436380}
   - {fileID: 655994170}
   - {fileID: 2112787234}
-  Spaces:
-  - 2.5
-  - 5
-  - 10
   StrengthLevel: []
   generator: {fileID: 1206645586}
   RestrictPos: 200
