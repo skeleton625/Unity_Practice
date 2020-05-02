@@ -16,11 +16,11 @@ MonoBehaviour:
     points: []
     isClosed: 0
     autoSetControlPoints: 0
-  RiverWidth: 1000
+  RiverWidth: 800
   RiverHeight: 100
   IntervalSize: 200
   spacing: 2.5
   resolution: 1
   WaterLevel: 0
-  RealStrength: 0
+  RealStrength: 0.05
   DepthLevel: 0
