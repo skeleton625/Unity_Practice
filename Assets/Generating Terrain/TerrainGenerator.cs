@@ -125,11 +125,7 @@ public class TerrainGenerator : MonoBehaviour
 
     public Vector3 SetDownTerrain(int px, int pz, int bSize, float strength)
     {
-        int dx = DepthBrush[bSize].height / 2;
-        int dz = DepthBrush[bSize].width / 2;
-
         int bx, bz;
-        float nh;
 
         Color[] brushData = DepthBrush[bSize].GetPixels();
         for (int x = 0; x < DepthBrush[bSize].height; x++)
@@ -158,7 +154,9 @@ public class TerrainGenerator : MonoBehaviour
                 }
             }
         }
-        return SetRealHeight(new Vector3(px + dx, 0, pz + dz));
+        return SetRealHeight(new Vector3(px + DepthBrush[bSize].height / 2, 
+                                         0, 
+                                         pz + DepthBrush[bSize].width / 2));
     }
 
     //  현재 정의된 높낮이 배열로 Terrain의 전체 높낮이를 설정하는 함수
