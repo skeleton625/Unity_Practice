@@ -7,6 +7,9 @@ public class RiverData : ScriptableObject
     /* Path UI의 색, 크기, 회전 점의 표시여부 */
     [HideInInspector]
     public RiverPath path;
+    [HideInInspector]
+    public readonly float[] spaces = 
+                            new float[3] { 2.5f, 5, 10 };
 
     public int RiverWidth, RiverHeight;
     public int IntervalSize;

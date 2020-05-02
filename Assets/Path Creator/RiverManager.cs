@@ -7,7 +7,7 @@ public class RiverManager : MonoBehaviour
     [SerializeField]
     private GameObject[] RiverPaths;
     [SerializeField]
-    private float[] Spaces, StrengthLevel;
+    private float[] StrengthLevel;
     [SerializeField]
     private TerrainGenerator generator;
     [SerializeField]
@@ -41,7 +41,6 @@ public class RiverManager : MonoBehaviour
             RiverPaths[i].transform.rotation = Quaternion.Euler(rot);
             RiverPaths[i].GetComponent<PathCreator>().
                                     CreateRandomRiver(depth, 0, 
-                                                      Spaces[depth], 
                                                       StrengthLevel[strength] / 1500, 
                                                       generator);
             startPos += interval;
