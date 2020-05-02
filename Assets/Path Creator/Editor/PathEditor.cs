@@ -38,7 +38,7 @@ public class PathEditor : Editor
         {
             Undo.RecordObject(creator, "Create River");
             if (creator.AutoRiver)
-                creator.CreateRandomRiver(1, 5, 0, 100, null);
+                creator.CreateRandomRiver(1, 0, 100, null);
             else
                 creator.CreateRiver(1);
         }
