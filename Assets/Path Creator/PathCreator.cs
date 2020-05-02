@@ -26,9 +26,9 @@ public class PathCreator : MonoBehaviour
         path = new RiverPath(generator.SetRealHeight(transform.position));
     }
 
-    public void CreateRandomRiver(int DepthLevel, float WaterLevel, float Space, float Strength, TerrainGenerator Generator)
+    public void CreateRandomRiver(int DepthLevel, float WaterLevel, float Strength, TerrainGenerator Generator)
     {
-        datas.spacing = Space;
+        datas.spacing = datas.spaces[DepthLevel];
         datas.WaterLevel = WaterLevel;
         datas.DepthLevel = DepthLevel;
         datas.RealStrength = Strength;
@@ -38,8 +38,9 @@ public class PathCreator : MonoBehaviour
         int height = datas.RiverHeight;
         int interval = datas.IntervalSize;
         CreatePath();
+
         // 랜덤 경로 지정
-        for(int x = interval; x <= width; x += interval)
+        for (int x = interval; x <= width; x += interval)
         {
             Vector3 riverPos = new Vector3(x, 0, Random.Range(-height, height));
             /* Vector.zero를 기준으로 transfrom.rotation 만큼 회전 */
@@ -50,6 +51,8 @@ public class PathCreator : MonoBehaviour
 
             path.AddSegment(generator.SetRealHeight(riverPos));
         }
+        /* 지류 강의 시작 부, 끊김을 방지하기 위함 */
+        path.DeleteSegment(0);
 
         /* Terrain 깍기 시작 */
         CreateRiver(DepthLevel);
@@ -77,10 +80,12 @@ public class PathCreator : MonoBehaviour
                 break;
 
             Vector3 pos = generator.SetDownTerrain(x, z, DepthLevel, datas.RealStrength);
+
             /* mesh 간격을 위해 짝수 좌표에 대해서만 경로에 입력 */
-            if (i % 2 == 0)
-                newPath.AddSegment(pos);
+            newPath.AddSegment(pos);
         }
+
+        newPath.AddSegment(generator.SetRealHeight(points[i]));
         /* 경로에 혼선을 주는 시작 점 좌표들 제거 */
         newPath.DeleteSegment(0);
         newPath.DeleteSegment(0);
@@ -138,10 +143,15 @@ public class PathCreator : MonoBehaviour
 
             if(i % 90 == 0 && SubRiver != null)
             {
-                GameObject clone = Instantiate(SubRiver, path[i], Quaternion.identity);
-                clone.transform.LookAt(verts[vertIndex]);
+                int depths = datas.DepthLevel - 1 < 0 ? 0 : datas.DepthLevel - 1;
+                GameObject clone = Instantiate(SubRiver, Vector3.zero, Quaternion.identity);
+                clone.transform.position = path[i];
+                if(Random.Range(0, 2) == 0)
+                    clone.transform.LookAt(verts[vertIndex]);
+                else
+                    clone.transform.LookAt(verts[vertIndex + 2]);
                 clone.transform.Rotate(0, -90, 0);
-                clone.GetComponent<PathCreator>().CreateRandomRiver(datas.DepthLevel - 1, 0, datas.spacing, datas.RealStrength, generator);
+                clone.GetComponent<PathCreator>().CreateRandomRiver(depths, 0, datas.RealStrength, generator);
                 clone.SetActive(false);
             }
 
