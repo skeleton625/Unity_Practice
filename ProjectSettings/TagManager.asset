@@ -18,7 +18,7 @@ TagManager:
   - 
   - PostProcessing
   - Curreal Grass
-  - 
+  - FogOfWar
   - 
   - 
   - 
@@ -43,4 +43,7 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: FogOfWar
+    uniqueID: 1906315623
     locked: 0
